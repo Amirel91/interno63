@@ -1,4 +1,4 @@
-/* Interno 63 — vetrina, carrello, dettaglio prodotto e area admin (vanilla ES6+) */
+/* Interno 63 — vetrina, carrello, dettaglio prodotto, area admin (vanilla ES6+) */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -67,6 +67,24 @@ function toast(messaggio) {
   toastTimer = setTimeout(() => el.classList.remove('visibile'), 2600);
 }
 
+/* ---------- Animazioni ingresso (class .reveal del CSS) ---------- */
+function osservaAnimazioni() {
+  const elementi = document.querySelectorAll('.reveal');
+  if (!elementi.length) return;
+  if (!('IntersectionObserver' in window)) {
+    elementi.forEach(el => el.classList.add('visibile'));
+    return;
+  }
+  const osservatore = new IntersectionObserver(voci => {
+    voci.forEach(voce => {
+      if (!voce.isIntersecting) return;
+      voce.target.classList.add('visibile');
+      osservatore.unobserve(voce.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+  elementi.forEach(el => osservatore.observe(el));
+}
+
 /* ---------- Rendering: card, filtri, catalogo, vetrina ---------- */
 function schedaProdotto(p) {
   const media = p.img && String(p.img).trim()
@@ -86,9 +104,10 @@ function schedaProdotto(p) {
 function renderChips() {
   const box = $('#chips');
   if (!box) return;
-  box.innerHTML = Object.entries(CATEGORIE).map(([k, etichetta]) =>
-    `<button class="chip${filtroAttivo === k ? ' attiva' : ''}" type="button" role="tab" aria-selected="${filtroAttivo === k}" data-filtro="${k}">${etichetta}</button>`
-  ).join('');
+  box.innerHTML = Object.entries(CATEGORIE).map(([k, etichetta]) => {
+    const attiva = filtroAttivo === k;
+    return `<button class="chip${attiva ? ' attiva active' : ''}" type="button" role="tab" aria-selected="${attiva}" data-filtro="${k}">${etichetta}</button>`;
+  }).join('');
 }
 
 function renderCatalogo() {
@@ -109,14 +128,35 @@ function renderVetrina() {
   if (sezione) sezione.classList.toggle('hidden', scelti.length === 0);
 }
 
-/* ---------- Overlay: modali, drawer, scrim ---------- */
+/* ---------- Overlay: scrim, modali, drawer, blocco scroll ---------- */
+let scrimTimer = null;
+
+function mostraScrim() {
+  const s = $('#scrim');
+  if (!s) return;
+  clearTimeout(scrimTimer);
+  s.hidden = false;
+  requestAnimationFrame(() => s.classList.add('visibile'));
+}
+
+function nascondiScrim() {
+  const s = $('#scrim');
+  if (!s) return;
+  s.classList.remove('visibile');
+  scrimTimer = setTimeout(() => { s.hidden = true; }, 240);
+}
+
+function bloccaScroll(attivo) {
+  document.body.classList.toggle('blocco-scroll', attivo);
+}
+
 function apriModale(sel) {
   const m = $(sel);
   if (!m) return;
   m.hidden = false;
   requestAnimationFrame(() => m.classList.add('aperta'));
-  const s = $('#scrim');
-  if (s) s.hidden = false;
+  mostraScrim();
+  bloccaScroll(true);
 }
 
 function apriCarrello() {
@@ -124,8 +164,8 @@ function apriCarrello() {
   if (!d) return;
   d.classList.add('aperta');
   d.setAttribute('aria-hidden', 'false');
-  const s = $('#scrim');
-  if (s) s.hidden = false;
+  mostraScrim();
+  bloccaScroll(true);
 }
 
 function chiudiTutto() {
@@ -135,8 +175,8 @@ function chiudiTutto() {
   });
   const d = $('#cartDrawer');
   if (d) { d.classList.remove('aperta'); d.setAttribute('aria-hidden', 'true'); }
-  const s = $('#scrim');
-  if (s) s.hidden = true;
+  nascondiScrim();
+  bloccaScroll(false);
 }
 
 /* ---------- Dettaglio prodotto ---------- */
@@ -163,7 +203,7 @@ function totaleCarrello() {
 
 function renderCarrello() {
   const badge = $('#cartCount');
-  if (badge) badge.textContent = carrello.reduce((s, r) => s + r.qta, 0);
+  if (badge) badge.textContent = String(carrello.reduce((s, r) => s + r.qta, 0));
   const lista = $('#cartItems');
   if (!lista) return;
   lista.innerHTML = carrello.length
@@ -233,6 +273,14 @@ function inviaOrdine() {
   toast(`Grazie ${nome}! Richiesta inviata: ti ricontattiamo per conferma e consegna.`);
 }
 
+/* ---------- Dati negozio ---------- */
+function applicaDatiNegozio() {
+  const piede = $('#footName');
+  if (piede) piede.textContent = negozio.nome || NEGOZIO_INIZIALE.nome;
+  const tel = $('#cPhone');
+  if (tel) tel.textContent = negozio.telefono || NEGOZIO_INIZIALE.telefono;
+}
+
 /* ---------- Area amministratore ---------- */
 function isAdmin() { return leggiJSON(CHIAVI.admin, false) === true; }
 
@@ -257,6 +305,7 @@ function attivaTab(nome) {
   document.querySelectorAll('#adminTabs .tab').forEach(b => {
     const on = b.dataset.tab === nome;
     b.classList.toggle('attiva', on);
+    b.classList.toggle('active', on);
     b.setAttribute('aria-selected', on);
   });
   document.querySelectorAll('#adminPanel .tabpane').forEach(p => { p.hidden = p.id !== `tab-${nome}`; });
@@ -354,6 +403,7 @@ function salvaDati(evento) {
   if (!nome) { toast('Il nome del negozio è obbligatorio.'); return; }
   negozio = { nome, telefono };
   scriviJSON(CHIAVI.negozio, negozio);
+  applicaDatiNegozio();
   const reset = $('#sReset');
   if (reset && reset.checked) {
     if (!confirm('Ripristinare il catalogo iniziale? Le modifiche andranno perse.')) return;
@@ -480,11 +530,16 @@ function init() {
   const n = leggiJSON(CHIAVI.negozio, {});
   negozio = (n && typeof n === 'object') ? { ...NEGOZIO_INIZIALE, ...n } : { ...NEGOZIO_INIZIALE };
 
+  const anno = $('#anno');
+  if (anno) anno.textContent = String(new Date().getFullYear());
+  applicaDatiNegozio();
+
   renderChips();
   renderCatalogo();
   renderVetrina();
   renderCarrello();
   collegaEventi();
+  osservaAnimazioni();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

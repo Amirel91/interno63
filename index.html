@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interno 63 — Bomboniere, Articoli Regalo e Servizi Matrimonio</title>
 <meta name="description" content="Interno 63: bomboniere artigianali, cofanetti regalo e servizi completi per matrimoni, battesimi e cerimonie. Qualità curata, personalizzazione e consegna in tutta Italia.">
-<meta name="theme-color" content="#10b981">
+<meta name="theme-color" content="#0e9f6e">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,6 +21,7 @@
 </header>
 
 <main id="top">
+  <!-- HERO -->
   <section class="hero" aria-label="Presentazione">
     <div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
     <div class="hero-inner reveal">
@@ -39,17 +40,43 @@
     </div>
   </section>
 
+  <!-- TRUST: garanzie del negozio -->
+  <section class="trust" aria-label="Perché scegliere Interno 63">
+    <div class="trust-inner">
+      <div class="trust-item reveal">
+        <span class="trust-ico" aria-hidden="true">🎀</span>
+        <div><b>Fatto a mano</b><span>Ogni pezzo è selezionato e rifinito nel nostro laboratorio.</span></div>
+      </div>
+      <div class="trust-item reveal">
+        <span class="trust-ico" aria-hidden="true">✍️</span>
+        <div><b>Personalizzazione</b><span>Nomi, date e confezioni coordinate al tema della cerimonia.</span></div>
+      </div>
+      <div class="trust-item reveal">
+        <span class="trust-ico" aria-hidden="true">📦</span>
+        <div><b>Spedizione in Italia</b><span>Consegna tracciata in 3–5 giorni lavorativi.</span></div>
+      </div>
+      <div class="trust-item reveal">
+        <span class="trust-ico" aria-hidden="true">💬</span>
+        <div><b>Assistenza dedicata</b><span>Un referente unico dalla scelta alla consegna in sala.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VETRINA -->
   <section class="section" id="vetrina">
     <div class="section-head reveal">
+      <span class="pill">Selezione della settimana</span>
       <h2>In vetrina questa settimana</h2>
       <p>I pezzi che i nostri clienti scelgono più spesso: perfetti anche come regalo dell'ultimo minuto.</p>
     </div>
     <div class="grid" id="featuredGrid"></div>
   </section>
 
+  <!-- CATALOGO -->
   <section class="section" id="catalogo">
     <div class="section-head reveal">
-      <h2>Catalogo completo</h2>
+      <span class="pill">Catalogo</span>
+      <h2>Tutti gli articoli</h2>
       <p>Filtra per categoria e trova la bomboniera o il cofanetto giusto per la tua cerimonia.</p>
     </div>
     <div class="chips reveal" id="chips" role="tablist" aria-label="Filtri categoria"></div>
@@ -57,6 +84,33 @@
     <p class="empty" id="emptyMsg" hidden>Nessun articolo in questa categoria: prova un altro filtro.</p>
   </section>
 
+  <!-- COME FUNZIONA -->
+  <section class="steps-band" aria-label="Come ordinare">
+    <div class="section-head reveal">
+      <span class="pill">Come funziona</span>
+      <h2>Ordinare è semplice</h2>
+      <p>Tre passaggi dal catalogo alla consegna, con un referente sempre disponibile.</p>
+    </div>
+    <ol class="steps-inner">
+      <li class="step reveal">
+        <span class="step-num" aria-hidden="true">1</span>
+        <b>Scegli gli articoli</b>
+        <p>Sfoglia il catalogo e aggiungi al carrello bomboniere, cofanetti e servizi matrimonio.</p>
+      </li>
+      <li class="step reveal">
+        <span class="step-num" aria-hidden="true">2</span>
+        <b>Personalizziamo insieme</b>
+        <p>Ti ricontattiamo per nomi, date, confetti e confezioni coordinate al tuo tema.</p>
+      </li>
+      <li class="step reveal">
+        <span class="step-num" aria-hidden="true">3</span>
+        <b>Ricevi o ritira</b>
+        <p>Spedizione tracciata in tutta Italia oppure ritiro gratuito in negozio a Monopoli.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- MATRIMONI -->
   <section class="wed" id="matrimoni">
     <div class="wed-inner reveal">
       <p class="kicker">Servizi matrimonio</p>
@@ -72,15 +126,19 @@
     </div>
   </section>
 
+  <!-- CHI SIAMO -->
   <section class="section about" id="chi-siamo">
     <div class="section-head reveal">
-      <h2>Chi siamo</h2>
-      <p>Interno 63 è un laboratorio-boutique nato nel 2014 dall'incontro tra Martina e Gianni: lei cura la selezione, lui i legni e le finiture. Ogni ordine viene preparato a mano e controllato prima della spedizione.</p>
+      <span class="pill">Chi siamo</span>
+      <h2>Un laboratorio-boutique nel cuore di Monopoli</h2>
+      <p>Interno 63 è nato nel 2014 dall'incontro tra Martina e Gianni: lei cura la selezione, lui i legni e le finiture. Ogni ordine viene preparato a mano e controllato prima della spedizione.</p>
     </div>
   </section>
 
+  <!-- CONTATTI -->
   <section class="section contact" id="contatti">
     <div class="section-head reveal">
+      <span class="pill">Contatti</span>
       <h2>Contatti e orari</h2>
     </div>
     <div class="contact-grid reveal">
@@ -119,7 +177,7 @@
 <!-- Dettaglio prodotto -->
 <div class="modal" id="productModal" role="dialog" aria-modal="true" aria-label="Dettaglio prodotto" hidden>
   <div class="modal-card" id="modalBody"></div>
-  <button class="modal-x link" id="modalClose" type="button" aria-label="Chiudi dettaglio">✕</button>
+  <button class="modal-x" id="modalClose" type="button" aria-label="Chiudi dettaglio">✕</button>
 </div>
 
 <!-- Admin -->
@@ -137,9 +195,9 @@
     </form>
     <div id="adminPanel" hidden>
       <div class="tabs" id="adminTabs" role="tablist">
-        <button class="tab active" data-tab="prod" type="button">Prodotti</button>
-        <button class="tab" data-tab="ord" type="button">Ordini</button>
-        <button class="tab" data-tab="set" type="button">Dati negozio</button>
+        <button class="tab attiva" data-tab="prod" type="button" aria-selected="true">Prodotti</button>
+        <button class="tab" data-tab="ord" type="button" aria-selected="false">Ordini</button>
+        <button class="tab" data-tab="set" type="button" aria-selected="false">Dati negozio</button>
       </div>
       <div id="tab-prod" class="tabpane">
         <form class="form-grid" id="prodForm">
