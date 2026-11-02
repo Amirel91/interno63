@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interno 63 — Bomboniere, Articoli Regalo e Servizi Matrimonio</title>
 <meta name="description" content="Interno 63: bomboniere artigianali, cofanetti regalo e servizi completi per matrimoni, battesimi e cerimonie. Qualità curata, personalizzazione e consegna in tutta Italia.">
+<meta name="theme-color" content="#10b981">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,7 +31,11 @@
         <a class="btn" href="#catalogo">Scopri il catalogo</a>
         <a class="btn btn-ghost" href="#matrimoni">Servizi matrimonio</a>
       </div>
-      <p class="trust">★ 4.9 di valutazione · oltre 600 cerimonie seguite dal 2014 · spedizione in 48/72h</p>
+      <div class="hero-stats">
+        <div class="stat"><b>11</b><span>anni di attività</span></div>
+        <div class="stat"><b>600+</b><span>cerimonie seguite</span></div>
+        <div class="stat"><b>4.9★</b><span>valutazione clienti</span></div>
+      </div>
     </div>
   </section>
 
@@ -61,7 +66,7 @@
         <li class="wed-item"><b>Tavolo delle bomboniere</b>Selezione di oltre 120 modelli, prova gratuita in negozio e personalizzazione con nomi e data degli sposi.</li>
         <li class="wed-item"><b>Confetteria di qualità</b>Confetti artigianali italiani: mandorla, cioccolato, liquirizia, in confezioni coordinate al tema.</li>
         <li class="wed-item"><b>Segnaposto e partecipazioni</b>Bigliettini stampati a mano, cassette in legno d'ulivo e mini piante grasse come segnaposto.</li>
-        <li class="wed-item"><b>Consegna in sala</b>Trasporto e allestimento del tavolo il giorno delle nozze, compreso nel servizio "Chiesa e Ricevimento".li</li>
+        <li class="wed-item"><b>Consegna in sala</b>Trasporto e allestimento del tavolo il giorno delle nozze, compreso nel servizio «Chiesa e Ricevimento».</li>
       </ul>
       <a class="btn" href="#contatti">Richiedi un preventivo gratuito</a>
     </div>
@@ -81,7 +86,7 @@
     <div class="contact-grid reveal">
       <div class="contact-card">
         <h3>Negozio</h3>
-        <p>Via Roma 63, 70043 Monopoli (BA)<br>Tel e WhatsApp: 351 234 5678<br>info@interno63.it</p>
+        <p>Via Roma 63, 70043 Monopoli (BA)<br>Tel e WhatsApp: <b id="cPhone">351 234 5678</b><br>info@interno63.it</p>
       </div>
       <div class="contact-card">
         <h3>Orari</h3>
@@ -96,7 +101,7 @@
 </main>
 
 <footer class="foot">
-  <p>© 2025 Interno 63 · Bomboniere, articoli regalo e servizi matrimonio · Monopoli (BA)</p>
+  <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Bomboniere, articoli regalo e servizi matrimonio · Monopoli (BA)</p>
   <button class="link" id="adminOpen" type="button">Area amministratore</button>
 </footer>
 
@@ -162,9 +167,9 @@
       <div id="tab-ord" class="tabpane" hidden></div>
       <div id="tab-set" class="tabpane" hidden>
         <form class="form-grid" id="setForm">
-          <label>Nome negozio<input id="sName" required></label>
-          <label>Telefono<input id="sPhone" required></label>
-          <label class="check"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche)</label>
+          <label>Nome negozio<input id="sName" required maxlength="40"></label>
+          <label>Telefono<input id="sPhone" required maxlength="30"></label>
+          <label class="check wide"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche)</label>
           <div class="cta-row wide"><button class="btn" type="submit">Salva dati</button></div>
         </form>
       </div>
