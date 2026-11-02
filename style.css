@@ -1,10 +1,272 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: system-ui, sans-serif; background: #f8fafc; color: #0f172a; }
-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; }
-.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); padding: 1.5rem; max-width: 1000px; margin: 0 auto; }
-.product { background: #fff; border-radius: 12px; padding: 1rem; border: 1px solid #e2e8f0; }
-.product img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; background: #e2e8f0; }
-.product button { width: 100%; margin-top: .5rem; padding: .6rem; border: 0; border-radius: 8px; background: #10b981; color: #04110b; font-weight: 600; cursor: pointer; }
-.cart { position: fixed; inset: 0 0 0 auto; width: min(340px, 90vw); background: #fff; padding: 1.5rem; box-shadow: -8px 0 30px rgba(0,0,0,.15); overflow-y: auto; }
-.hidden { display: none; }
-#checkout { width: 100%; margin-top: 1rem; padding: .8rem; border: 0; border-radius: 8px; background: #0f172a; color: #fff; font-weight: 600; }
+/* ============================================================
+   INTERNO 63 — bomboniere · articoli regalo · cofanetti · matrimoni
+   Foglio di stile unico · mobile-first · palette originaria riusata
+   ============================================================ */
+:root{
+  --bg:#f8fafc;
+  --carta:#ffffff;
+  --testo:#0f172a;
+  --testo-2:#475569;
+  --bordo:#e2e8f0;
+  --accente:#10b981;
+  --accente-scuro:#047857;
+  --accente-tenue:#ecfdf5;
+  --ombra:0 10px 30px rgba(15,23,42,.08);
+  --raggio:12px;
+  --transizione:250ms ease-out;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--testo);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+:focus-visible{outline:2px solid var(--accente);outline-offset:2px}
+::selection{background:var(--accente);color:#04110b}
+
+/* ---------- Header ---------- */
+header{
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  flex-wrap:wrap;padding:1rem 1.5rem;background:var(--carta);
+  border-bottom:1px solid var(--bordo);position:sticky;top:0;z-index:50;
+}
+header h1,.logo{font-size:1.15rem;letter-spacing:.02em}
+header h1 span,.logo span{color:var(--accente-scuro)}
+header nav{display:flex;gap:1.1rem;flex-wrap:wrap}
+header nav a{color:var(--testo-2);text-decoration:none;font-weight:500;font-size:.95rem;transition:color var(--transizione)}
+header nav a:hover{color:var(--accente-scuro)}
+#cart-btn{
+  padding:.6rem 1.1rem;border:0;border-radius:999px;background:var(--testo);
+  color:#fff;font-weight:600;cursor:pointer;font:inherit;
+  transition:background var(--transizione),transform var(--transizione);
+}
+#cart-btn:hover{background:var(--accente-scuro)}
+#cart-btn:active{transform:scale(.97)}
+
+/* ---------- Hero ---------- */
+.hero{
+  background:linear-gradient(160deg,var(--accente-tenue) 0%,var(--bg) 65%);
+  padding:3.5rem 1.5rem;text-align:center;
+}
+.hero h2{font-size:1.9rem;line-height:1.2;max-width:22ch;margin:0 auto}
+.hero h2 em{font-style:normal;color:var(--accente-scuro)}
+.hero > p{max-width:46ch;margin:.85rem auto 0;color:var(--testo-2)}
+.hero-stats{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:2.25rem}
+.stat b{display:block;font-size:1.7rem;line-height:1.1;color:var(--accente-scuro)}
+.stat span{font-size:.85rem;color:var(--testo-2)}
+.hero > *{animation:comparsa .35s ease-out both}
+
+/* ---------- Sezioni comuni ---------- */
+section h2{font-size:1.5rem;margin-bottom:.35rem}
+section > p:first-of-type{color:var(--testo-2);margin-bottom:1.5rem}
+
+/* Sezione "Chi siamo" */
+.about{
+  max-width:1000px;margin:0 auto;padding:2.5rem 1.5rem;
+  display:grid;gap:1.5rem;align-items:start;
+}
+.about > *{animation:comparsa .3s ease-out both}
+.about .segnaposto,.about img{height:260px;border-radius:var(--raggio);object-fit:cover}
+
+/* Sezione contatti */
+.contact{
+  max-width:1000px;margin:0 auto;padding:2.5rem 1.5rem;
+  display:grid;gap:1rem;
+}
+.contact > *{
+  background:var(--carta);border:1px solid var(--bordo);
+  border-radius:var(--raggio);padding:1.25rem;
+  transition:transform var(--transizione),box-shadow var(--transizione);
+}
+.contact > *:hover{transform:translateY(-3px);box-shadow:var(--ombra)}
+.contact h3{font-size:1rem;margin-bottom:.2rem}
+.contact p{color:var(--testo-2);font-size:.95rem}
+.contact a{color:var(--accente-scuro);font-weight:600;text-decoration:none}
+.contact a:hover{text-decoration:underline}
+
+/* ---------- Griglie e card prodotto ---------- */
+.grid{
+  display:grid;gap:1rem;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  padding:1.5rem;max-width:1000px;margin:0 auto;
+}
+.vetrina,#vetrina{
+  display:grid;gap:1.25rem;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  max-width:1000px;margin:0 auto;padding:1.5rem;
+}
+.vetrina .segnaposto,.vetrina img{height:220px}
+
+.product{
+  position:relative;display:flex;flex-direction:column;gap:.5rem;
+  background:var(--carta);border-radius:var(--raggio);padding:1rem;
+  border:1px solid var(--bordo);
+  transition:transform var(--transizione),box-shadow var(--transizione);
+  animation:comparsa .3s ease-out both;
+}
+.product:hover{transform:translateY(-4px);box-shadow:var(--ombra)}
+.product h3{font-size:1rem;line-height:1.3}
+.product img{width:100%;height:140px;object-fit:cover;border-radius:8px;background:#e2e8f0}
+.product .prezzo{font-weight:700;margin-top:auto}
+.product .categoria{font-size:.75rem;color:var(--testo-2);text-transform:uppercase;letter-spacing:.05em}
+.product button{
+  width:100%;margin-top:.5rem;padding:.6rem;border:0;border-radius:8px;
+  background:var(--accente);color:#04110b;font-weight:600;cursor:pointer;
+  font:inherit;transition:background var(--transizione),transform var(--transizione);
+}
+.product button:hover{background:#059669}
+.product button:active{transform:scale(.97)}
+
+/* Segnaposto immagine (nessuna foto caricata) */
+.segnaposto{
+  height:140px;border-radius:8px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.9) 12%,transparent 13%),
+    linear-gradient(135deg,#e2e8f0 0%,#f1f5f9 100%);
+}
+.segnaposto::after{
+  content:"✿";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;color:#94a3b8;
+}
+
+/* Badge "in vetrina" sulla card */
+.badge-vetrina{
+  position:absolute;top:.75rem;left:.75rem;z-index:2;
+  background:var(--accente);color:#04110b;font-size:.72rem;font-weight:700;
+  padding:.2rem .6rem;border-radius:999px;letter-spacing:.03em;
+  box-shadow:0 2px 6px rgba(4,17,11,.18);
+}
+
+/* ---------- Carrello laterale ---------- */
+.cart{
+  position:fixed;inset:0 0 0 auto;width:min(340px,90vw);
+  background:var(--carta);padding:1.5rem;z-index:60;
+  box-shadow:-8px 0 30px rgba(0,0,0,.15);overflow-y:auto;
+}
+.hidden{display:none!important}
+.cart ul{list-style:none;display:grid;gap:.6rem;margin-top:1rem}
+.cart li{
+  display:flex;justify-content:space-between;align-items:center;gap:.75rem;
+  background:var(--bg);border:1px solid var(--bordo);border-radius:8px;
+  padding:.55rem .75rem;font-size:.92rem;
+}
+.cart li button{
+  border:0;background:transparent;color:#b91c1c;font-weight:700;cursor:pointer;
+  font:inherit;font-size:.95rem;line-height:1;
+}
+.cart .totale{display:flex;justify-content:space-between;font-weight:700;margin-top:1rem}
+#checkout{
+  width:100%;margin-top:1rem;padding:.8rem;border:0;border-radius:8px;
+  background:var(--testo);color:#fff;font-weight:600;cursor:pointer;
+  font:inherit;transition:background var(--transizione);
+}
+#checkout:hover{background:var(--accente-scuro)}
+
+/* ---------- Area amministratore ---------- */
+#admin,.admin{
+  max-width:1000px;margin:0 auto;padding:2.5rem 1.5rem;
+}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.tabs button{
+  padding:.55rem 1.1rem;border:1px solid var(--bordo);background:var(--carta);
+  border-radius:999px;cursor:pointer;font:inherit;font-weight:600;
+  color:var(--testo-2);transition:all var(--transizione);
+}
+.tabs button:hover{border-color:var(--accente);color:var(--accente-scuro)}
+.tabs button.attiva,.tabs button.attivo{
+  background:var(--testo);color:#fff;border-color:var(--testo);
+}
+.tabpane{display:none}
+.tabpane.attiva,.tabpane.attivo{display:block;animation:comparsa .25s ease-out both}
+
+/* Form prodotto / accesso */
+form{display:grid;gap:1rem;background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio);padding:1.25rem}
+.campo{display:grid;gap:.35rem}
+label{font-size:.85rem;font-weight:600}
+input,select,textarea{
+  width:100%;padding:.6rem .75rem;border:1px solid var(--bordo);
+  border-radius:8px;font:inherit;background:#fff;color:var(--testo);
+  transition:border-color var(--transizione);
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accente);outline:none}
+.form-azioni{display:flex;gap:.6rem;flex-wrap:wrap}
+.btn-secondario{background:#fff;border:1px solid var(--bordo);color:var(--testo)}
+.btn-pericolo{background:#fee2e2;color:#b91c1c;border:0}
+.btn-secondario,.btn-pericolo{
+  padding:.6rem 1rem;border-radius:8px;font-weight:600;cursor:pointer;
+  font:inherit;transition:all var(--transizione);
+}
+.btn-secondario:hover{border-color:var(--accente);color:var(--accente-scuro)}
+.btn-pericolo:hover{background:#fecaca}
+
+/* Tabella prodotti e schede ordini */
+.tabella{
+  width:100%;border-collapse:collapse;font-size:.92rem;background:var(--carta);
+  border:1px solid var(--bordo);border-radius:var(--raggio);overflow:hidden;
+}
+.tabella th{background:#f1f5f9;text-align:left;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+.tabella th,.tabella td{padding:.6rem .75rem;border-bottom:1px solid var(--bordo);text-align:left;vertical-align:middle}
+.tabella tr:last-child td{border-bottom:0}
+.tabella .azioni{display:flex;gap:.4rem;flex-wrap:wrap}
+.btn-mini{
+  padding:.35rem .65rem;font-size:.8rem;font-weight:600;border-radius:6px;
+  border:1px solid var(--bordo);background:#fff;color:var(--testo-2);
+  cursor:pointer;font:inherit;transition:all var(--transizione);
+}
+.btn-mini:hover{border-color:var(--accente);color:var(--accente-scuro)}
+.ordine{
+  background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio);
+  padding:1rem;display:grid;gap:.3rem;animation:comparsa .3s ease-out both;
+}
+.ordine b{font-size:.95rem}
+.ordine span{font-size:.88rem;color:var(--testo-2)}
+#admin .lista-ordini,.lista-ordini{display:grid;gap:.75rem;margin-top:1rem}
+.vuoto{color:var(--testo-2);font-style:italic;padding:.5rem 0}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed;bottom:1.25rem;left:50%;transform:translate(-50%,12px);
+  background:var(--testo);color:#fff;padding:.7rem 1.2rem;border-radius:999px;
+  font-size:.92rem;font-weight:500;opacity:0;pointer-events:none;z-index:100;
+  box-shadow:var(--ombra);transition:opacity var(--transizione),transform var(--transizione);
+}
+.toast.visibile{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Footer ---------- */
+footer{
+  border-top:1px solid var(--bordo);background:var(--carta);
+  padding:2rem 1.5rem;text-align:center;color:var(--testo-2);font-size:.9rem;
+  margin-top:2rem;
+}
+footer a{color:var(--accente-scuro);text-decoration:none;font-weight:600}
+footer a:hover{text-decoration:underline}
+
+/* ---------- Animazioni ---------- */
+@keyframes comparsa{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* ---------- Responsive ---------- */
+@media (min-width:768px){
+  .hero{padding:4.5rem 2rem}
+  .hero h2{font-size:2.4rem}
+  .hero-stats{gap:3.5rem}
+  .about{grid-template-columns:1fr 1fr;align-items:center;padding:3.5rem 1.5rem}
+  .contact{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  form{grid-template-columns:1fr 1fr}
+  .form-azioni,.campo-pieno{grid-column:1/-1}
+}
+@media (min-width:1024px){
+  .hero{padding:5.5rem 2rem}
+  .hero h2{font-size:2.8rem}
+  .vetrina,#vetrina{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .vetrina .segnaposto,.vetrina img{height:260px}
+}

@@ -3,13 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shop</title>
+<title>Interno 63 — Bomboniere, Articoli Regalo e Servizi Matrimonio</title>
+<meta name="description" content="Interno 63: bomboniere artigianali, cofanetti regalo e servizi completi per matrimoni, battesimi e cerimonie. Qualità curata, personalizzazione e consegna in tutta Italia.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><h1>Il mio shop</h1><button id="cart-btn">Carrello (<span id="cart-count">0</span>)</button></header>
-<main id="products" class="grid"></main>
-<div id="cart" class="cart hidden"><h2>Carrello</h2><ul id="cart-list"></ul><button id="checkout">Vai alla cassa</button></div>
+<header class="nav">
+  <a class="brand" href="#top"><span class="dot"></span> Interno <b>63</b></a>
+  <nav class="nav-links" aria-label="Navigazione principale">
+    <a href="#vetrina">Vetrina</a>
+    <a href="#catalogo">Catalogo</a>
+    <a href="#matrimoni">Matrimoni</a>
+    <a href="#contatti">Contatti</a>
+  </nav>
+  <button class="cart-btn" id="cartBtn" aria-label="Apri carrello">🛍️ <span class="badge" id="cartCount">0</span></button>
+</header>
+
+<main id="top">
+  <section class="hero" aria-label="Presentazione">
+    <div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+    <div class="hero-inner reveal">
+      <p class="kicker">Bomboniere · Regalo · Cerimonie</p>
+      <h1>Ogni occasione merita un ricordo <em>che resta</em>.</h1>
+      <p class="lead">Da Interno 63 scegli bomboniere artigianali, cofanetti regalo curati nei dettagli e servizi completi per il tuo matrimonio: selezioniamo ogni pezzo a mano, dal barattolo di miele alla candela profumata.</p>
+      <div class="cta-row">
+        <a class="btn" href="#catalogo">Scopri il catalogo</a>
+        <a class="btn btn-ghost" href="#matrimoni">Servizi matrimonio</a>
+      </div>
+      <p class="trust">★ 4.9 di valutazione · oltre 600 cerimonie seguite dal 2014 · spedizione in 48/72h</p>
+    </div>
+  </section>
+
+  <section class="section" id="vetrina">
+    <div class="section-head reveal">
+      <h2>In vetrina questa settimana</h2>
+      <p>I pezzi che i nostri clienti scelgono più spesso: perfetti anche come regalo dell'ultimo minuto.</p>
+    </div>
+    <div class="grid" id="featuredGrid"></div>
+  </section>
+
+  <section class="section" id="catalogo">
+    <div class="section-head reveal">
+      <h2>Catalogo completo</h2>
+      <p>Filtra per categoria e trova la bomboniera o il cofanetto giusto per la tua cerimonia.</p>
+    </div>
+    <div class="chips reveal" id="chips" role="tablist" aria-label="Filtri categoria"></div>
+    <div class="grid" id="productGrid"></div>
+    <p class="empty" id="emptyMsg" hidden>Nessun articolo in questa categoria: prova un altro filtro.</p>
+  </section>
+
+  <section class="wed" id="matrimoni">
+    <div class="wed-inner reveal">
+      <p class="kicker">Servizi matrimonio</p>
+      <h2>Il tuo matrimonio, curato in ogni dettaglio</h2>
+      <p class="lead">Affianchiamo gli sposi dalla scelta delle bomboniere all'allestimento delle tavole: un unico referente, preventivi chiari, consegna puntuale in chiesa e al ricevimento.</p>
+      <ul class="wed-list">
+        <li class="wed-item"><b>Tavolo delle bomboniere</b>Selezione di oltre 120 modelli, prova gratuita in negozio e personalizzazione con nomi e data degli sposi.</li>
+        <li class="wed-item"><b>Confetteria di qualità</b>Confetti artigianali italiani: mandorla, cioccolato, liquirizia, in confezioni coordinate al tema.</li>
+        <li class="wed-item"><b>Segnaposto e partecipazioni</b>Bigliettini stampati a mano, cassette in legno d'ulivo e mini piante grasse come segnaposto.</li>
+        <li class="wed-item"><b>Consegna in sala</b>Trasporto e allestimento del tavolo il giorno delle nozze, compreso nel servizio "Chiesa e Ricevimento".li</li>
+      </ul>
+      <a class="btn" href="#contatti">Richiedi un preventivo gratuito</a>
+    </div>
+  </section>
+
+  <section class="section about" id="chi-siamo">
+    <div class="section-head reveal">
+      <h2>Chi siamo</h2>
+      <p>Interno 63 è un laboratorio-boutique nato nel 2014 dall'incontro tra Martina e Gianni: lei cura la selezione, lui i legni e le finiture. Ogni ordine viene preparato a mano e controllato prima della spedizione.</p>
+    </div>
+  </section>
+
+  <section class="section contact" id="contatti">
+    <div class="section-head reveal">
+      <h2>Contatti e orari</h2>
+    </div>
+    <div class="contact-grid reveal">
+      <div class="contact-card">
+        <h3>Negozio</h3>
+        <p>Via Roma 63, 70043 Monopoli (BA)<br>Tel e WhatsApp: 351 234 5678<br>info@interno63.it</p>
+      </div>
+      <div class="contact-card">
+        <h3>Orari</h3>
+        <p>Lun–Ven 9:30–13:00 / 16:30–20:30<br>Sabato 9:30–13:00 / 17:00–21:00<br>Domenica su appuntamento</p>
+      </div>
+      <div class="contact-card">
+        <h3>Seguici</h3>
+        <p>Trovaci su Facebook come <b>Interno 63</b>: ogni settimana pubblichiamo le novità in vetrina e le composizioni della settimana.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>© 2025 Interno 63 · Bomboniere, articoli regalo e servizi matrimonio · Monopoli (BA)</p>
+  <button class="link" id="adminOpen" type="button">Area amministratore</button>
+</footer>
+
+<!-- Carrello laterale -->
+<aside class="drawer" id="cartDrawer" aria-label="Carrello" aria-hidden="true">
+  <div class="drawer-head">
+    <h2>Il tuo carrello</h2>
+    <button class="link" id="cartClose" type="button" aria-label="Chiudi carrello">✕ Chiudi</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot" id="cartFoot"></div>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
+
+<!-- Dettaglio prodotto -->
+<div class="modal" id="productModal" role="dialog" aria-modal="true" aria-label="Dettaglio prodotto" hidden>
+  <div class="modal-card" id="modalBody"></div>
+  <button class="modal-x link" id="modalClose" type="button" aria-label="Chiudi dettaglio">✕</button>
+</div>
+
+<!-- Admin -->
+<div class="modal" id="adminModal" role="dialog" aria-modal="true" aria-label="Area amministratore" hidden>
+  <div class="modal-card admin-card">
+    <div class="drawer-head">
+      <h2>Area amministratore</h2>
+      <button class="link" id="adminClose" type="button" aria-label="Chiudi area amministratore">✕ Chiudi</button>
+    </div>
+    <form class="gate" id="gateForm">
+      <label for="gatePass">Password amministratore</label>
+      <input type="password" id="gatePass" autocomplete="off" placeholder="Password demo: interno63" required>
+      <button class="btn" type="submit">Entra</button>
+      <p class="gate-msg" id="gateMsg" hidden>Password errata.</p>
+    </form>
+    <div id="adminPanel" hidden>
+      <div class="tabs" id="adminTabs" role="tablist">
+        <button class="tab active" data-tab="prod" type="button">Prodotti</button>
+        <button class="tab" data-tab="ord" type="button">Ordini</button>
+        <button class="tab" data-tab="set" type="button">Dati negozio</button>
+      </div>
+      <div id="tab-prod" class="tabpane">
+        <form class="form-grid" id="prodForm">
+          <input type="hidden" id="fId">
+          <label>Nome<input id="fName" required maxlength="60" placeholder="Es. Barattolo miele personalizzato"></label>
+          <label>Categoria
+            <select id="fCat">
+              <option value="bomboniere">Bomboniere</option>
+              <option value="cofanetti">Cofanetti</option>
+              <option value="regalo">Articoli regalo</option>
+              <option value="matrimonio">Servizi matrimonio</option>
+            </select>
+          </label>
+          <label>Prezzo €<input id="fPrice" type="number" min="0" step="0.10" required placeholder="0.00"></label>
+          <label>URL foto <span class="hint">(opzionale)</span><input id="fImg" type="url" placeholder="https://..."></label>
+          <label class="wide">Descrizione<input id="fDesc" maxlength="220" placeholder="Descrizione breve per la scheda prodotto"></label>
+          <label class="check"><input type="checkbox" id="fFeat"> In vetrina</label>
+          <div class="cta-row wide">
+            <button class="btn" type="submit" id="prodSave">Salva prodotto</button>
+            <button class="btn btn-ghost" type="button" id="prodReset">Pulisci modulo</button>
+          </div>
+        </form>
+        <div class="table-wrap" id="adminTable"></div>
+      </div>
+      <div id="tab-ord" class="tabpane" hidden></div>
+      <div id="tab-set" class="tabpane" hidden>
+        <form class="form-grid" id="setForm">
+          <label>Nome negozio<input id="sName" required></label>
+          <label>Telefono<input id="sPhone" required></label>
+          <label class="check"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche)</label>
+          <div class="cta-row wide"><button class="btn" type="submit">Salva dati</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="script.js"></script>
 </body>
 </html>
