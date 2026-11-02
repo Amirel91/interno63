@@ -1,8 +1,8 @@
 /* ============================================================
-   INTERNO 63 — design system mobile-first
-   Palette crema/smeraldo/oro · serif per i titoli · hamburger menu
-   Sealed sticker · ticker marquee · drawer carrello bottom-sheet
-   Breakpoint: 600px (griglie) · 768px (nav desktop) · 1024px (hero)
+   INTERNO 63 — design system "editoriale botanico" (mobile-first)
+   Carta avorio · verde bosco · accenti argilla/oro · serif oversize
+   Topbar promo · hero con pill offerta · tiles categorie · ticker
+   Breakpoint: 600px (griglie/drawer) · 768px (nav desktop) · 1024px
    ============================================================ */
 :root{
   --bg:#faf7f1;
@@ -15,6 +15,8 @@
   --accente-tenue:#e8f6ef;
   --oro:#b98a2f;
   --oro-tenue:#f6edd9;
+  --argilla:#c96f4a;
+  --argilla-scuro:#a4532f;
   --scuro:#12241c;
   --ombra:0 12px 32px rgba(36,29,20,.10);
   --ombra-forte:0 18px 44px rgba(36,29,20,.16);
@@ -32,10 +34,18 @@ body{
 body.blocco-scroll{overflow:hidden}
 img{max-width:100%;display:block}
 h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-height:1.2}
+section[id]{scroll-margin-top:4.5rem}
 :focus-visible{outline:2px solid var(--accente-scuro);outline-offset:2px}
 ::selection{background:var(--accente);color:#fff}
 [hidden]{display:none!important}
 .hidden{display:none!important}
+
+/* ---------- Topbar promo ---------- */
+.topbar{
+  background:var(--scuro);color:#e3bd6d;text-align:center;
+  font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  padding:.45rem 1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 
 /* ---------- Header + menu mobile ---------- */
 .nav{
@@ -56,14 +66,19 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
 }
 .nav-actions{display:flex;align-items:center;gap:.55rem;margin-left:auto}
 .menu-btn{
-  width:2.6rem;height:2.6rem;display:grid;place-items:center;
+  width:2.6rem;height:2.6rem;display:grid;place-content:center;gap:5px;
   border:1px solid var(--bordo);border-radius:50%;
-  background:var(--carta);color:var(--testo);font:inherit;font-size:1.05rem;
-  cursor:pointer;
-  transition:border-color var(--transizione),color var(--transizione),transform var(--transizione);
+  background:var(--carta);cursor:pointer;padding:0;
+  transition:border-color var(--transizione),transform var(--transizione);
 }
-.menu-btn:hover{border-color:var(--accente);color:var(--accente-scuro)}
+.menu-btn:hover{border-color:var(--accente)}
 .menu-btn:active{transform:scale(.94)}
+.menu-btn span{
+  display:block;width:1.1rem;height:2px;border-radius:2px;background:var(--testo);
+  transition:transform var(--transizione);
+}
+.menu-btn.attiva span:first-child{transform:translateY(3.5px) rotate(45deg)}
+.menu-btn.attiva span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
 .nav-menu{
   position:absolute;top:100%;left:0;right:0;
   display:grid;background:var(--carta);
@@ -95,8 +110,10 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
 /* ---------- Hero ---------- */
 .hero{
   position:relative;overflow:hidden;text-align:center;
-  padding:3.5rem 1.25rem 4rem;
-  background:linear-gradient(170deg,var(--oro-tenue) 0%,var(--bg) 60%);
+  padding:3.2rem 1.25rem 3.8rem;
+  background:
+    radial-gradient(rgba(185,138,47,.12) 1.2px,transparent 1.3px) 0 0/22px 22px,
+    linear-gradient(170deg,var(--oro-tenue) 0%,var(--bg) 62%);
 }
 .blobs span{position:absolute;border-radius:50%;filter:blur(46px);opacity:.5;pointer-events:none}
 .b1{width:340px;height:340px;background:var(--accente-tenue);top:-90px;left:-70px;animation:fluttua 14s ease-in-out infinite alternate}
@@ -120,11 +137,23 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
 .hero h1{font-size:clamp(2.15rem,6vw,3.5rem);margin-bottom:1.1rem}
 .hero h1 em{
   font-style:italic;color:var(--accente-scuro);
-  text-decoration:underline;text-decoration-color:var(--oro);
+  text-decoration:underline;text-decoration-color:var(--argilla);
   text-decoration-thickness:3px;text-underline-offset:7px;
 }
 .lead{color:var(--testo-2);max-width:56ch;margin:0 auto}
-.hero .lead{margin-bottom:2rem}
+.hero .lead{margin-bottom:1.4rem}
+.hero-offer{
+  display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center;
+  max-width:100%;margin:0 auto 1.8rem;padding:.5rem 1.15rem;
+  border:1.5px dashed var(--oro);border-radius:999px;
+  background:rgba(245,236,215,.6);
+  font-size:.84rem;color:var(--testo-2);
+}
+.hero-offer-tag{
+  font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--argilla-scuro);
+}
+.hero-offer b{font-family:var(--display);letter-spacing:.06em;color:var(--accente-scuro)}
 .cta-row{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
 .btn{
   display:inline-block;padding:.8rem 1.5rem;border:1px solid transparent;border-radius:999px;
@@ -175,6 +204,25 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
   background:var(--accente-tenue);color:var(--accente-scuro);
   font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
 }
+
+/* ---------- Tiles categorie ---------- */
+.cats{max-width:1080px;margin:0 auto;padding:0 1.25rem 3rem}
+.cats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem}
+.tile{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;
+  min-height:7rem;padding:1rem .6rem;text-align:center;text-decoration:none;
+  border:1px solid var(--bordo);border-radius:var(--raggio);background:var(--carta);
+  cursor:pointer;font:inherit;color:var(--testo);
+  transition:transform var(--transizione),box-shadow var(--transizione),border-color var(--transizione);
+}
+.tile:hover{transform:translateY(-4px);box-shadow:var(--ombra);border-color:var(--accente)}
+.tile:active{transform:scale(.97)}
+.tile:focus-visible{outline-offset:3px}
+.tile-ico{
+  width:2.6rem;height:2.6rem;display:grid;place-items:center;border-radius:50%;
+  background:linear-gradient(140deg,var(--oro-tenue),var(--accente-tenue));font-size:1.25rem;
+}
+.tile-nome{font-family:var(--display);font-size:.92rem;font-weight:600;line-height:1.3}
 
 /* Chips filtro */
 .chips{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.25rem}
@@ -356,6 +404,9 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
 .modal-card .desc{color:var(--testo-2);margin-bottom:1rem}
 .modal-card .prezzo{font-size:1.6rem;margin-bottom:1.1rem}
 .modal-card .btn{width:100%}
+.dettaglio-media img{width:100%;object-fit:cover;border-radius:12px}
+.dettaglio-media .segnaposto{min-height:200px;font-size:2.6rem;border-radius:12px}
+.dettaglio-info .categoria{display:block;margin-bottom:.2rem}
 
 /* ---------- Admin ---------- */
 .admin-card{padding:1.2rem}
@@ -431,6 +482,7 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
   .grid{gap:1.3rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
   .steps-inner{grid-template-columns:repeat(3,1fr);gap:1.4rem}
   .contact-grid{grid-template-columns:repeat(3,1fr)}
+  .cats-grid{grid-template-columns:repeat(4,1fr)}
   .modal{align-items:center;padding:1.25rem}
   .modal-card{border-radius:22px;padding:1.6rem;width:min(560px,100%)}
   .modal-x{position:absolute;top:.8rem;right:.8rem;margin-left:0}
@@ -455,6 +507,7 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-h
   }
   .nav-menu a{padding:0;border-bottom:0;font-size:.95rem}
   .section{padding:4.5rem 2rem}
+  .cats{padding:0 2rem 4rem}
   .hero{padding:5.5rem 2rem 6rem}
   .steps-band{padding:5rem 2rem}
   .wed{padding:5.5rem 2rem}

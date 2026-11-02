@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interno 63 — Bomboniere, Articoli Regalo e Servizi Matrimonio</title>
 <meta name="description" content="Interno 63: bomboniere artigianali, cofanetti regalo e servizi completi per matrimoni, battesimi e cerimonie. Qualità curata, personalizzazione e consegna in tutta Italia.">
-<meta name="theme-color" content="#0e9f6e">
+<meta name="theme-color" content="#1d4a35">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="topbar">Spedizione tracciata in tutta Italia · Personalizzazione con nomi e data inclusa</div>
+
 <header class="nav">
   <a class="brand" href="#top"><span class="dot"></span> Interno <b>63</b></a>
   <div class="nav-actions">
@@ -29,10 +31,11 @@
   <section class="hero" aria-label="Presentazione">
     <div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
     <div class="hero-inner reveal">
+      <span class="sticker">✦ Fatto a mano a Monopoli dal 2014</span>
       <p class="kicker">Bomboniere · Regalo · Cerimonie</p>
       <h1>Ogni occasione merita un ricordo <em>che resta</em>.</h1>
       <p class="lead">Da Interno 63 scegli bomboniere artigianali, cofanetti regalo curati nei dettagli e servizi completi per il tuo matrimonio: selezioniamo ogni pezzo a mano, dal barattolo di miele alla candela profumata.</p>
-      <span class="sticker">✦ Fatto a mano a Monopoli dal 2014</span>
+      <p class="hero-offer"><span class="hero-offer-tag">Promo del mese</span> −10% su cofanetti e box regalo con il codice <b>PRIMA63</b></p>
       <div class="cta-row">
         <a class="btn" href="#catalogo">Scopri il catalogo</a>
         <a class="btn btn-ghost" href="#matrimoni">Servizi matrimonio</a>
@@ -90,7 +93,16 @@
     <div class="section-head reveal">
       <span class="pill">Catalogo</span>
       <h2>Tutti gli articoli</h2>
-      <p>Filtra per categoria e trova la bomboniera o il cofanetto giusto per la tua cerimonia.</p>
+      <p>Tocca una categoria per iniziare, poi rifinisci con i filtri: il catalogo qui sotto si aggiorna da solo.</p>
+    </div>
+    <div class="cats reveal" aria-label="Compra per categoria">
+      <div class="cats-grid" role="group">
+        <button class="tile" type="button" data-filtro="tutti"><span class="tile-ico" aria-hidden="true">✦</span><span class="tile-nome">Tutti gli articoli</span></button>
+        <button class="tile" type="button" data-filtro="bomboniere"><span class="tile-ico" aria-hidden="true">🎀</span><span class="tile-nome">Bomboniere</span></button>
+        <button class="tile" type="button" data-filtro="cofanetti"><span class="tile-ico" aria-hidden="true">📦</span><span class="tile-nome">Cofanetti</span></button>
+        <button class="tile" type="button" data-filtro="regalo"><span class="tile-ico" aria-hidden="true">🎁</span><span class="tile-nome">Articoli regalo</span></button>
+        <button class="tile" type="button" data-filtro="matrimonio"><span class="tile-ico" aria-hidden="true">💍</span><span class="tile-nome">Servizi matrimonio</span></button>
+      </div>
     </div>
     <div class="chips reveal" id="chips" role="tablist" aria-label="Filtri categoria"></div>
     <div class="grid" id="productGrid"></div>

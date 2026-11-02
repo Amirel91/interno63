@@ -1,4 +1,4 @@
-/* Interno 63 — menu mobile, catalogo, carrello, dettaglio prodotto, area admin (vanilla ES6+) */
+/* Interno 63 — menu, catalogo, filtri, carrello, ordini e area admin (vanilla ES6+, zero dipendenze) */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -101,7 +101,7 @@ function osservaViewport() {
   else if (mq.addListener) mq.addListener(applica); /* Safari vecchi */
 }
 
-/* ---------- Animazioni ingresso (class .reveal del CSS) ---------- */
+/* ---------- Animazioni ingresso (attivano le .reveal del CSS) ---------- */
 function osservaAnimazioni() {
   const elementi = document.querySelectorAll('.reveal');
   if (!elementi.length) return;
@@ -142,6 +142,12 @@ function renderChips() {
     const attiva = filtroAttivo === k;
     return `<button class="chip${attiva ? ' attiva active' : ''}" type="button" role="tab" aria-selected="${attiva}" data-filtro="${k}">${etichetta}</button>`;
   }).join('');
+}
+
+function applicaFiltro(valore) {
+  filtroAttivo = CATEGORIE[valore] ? valore : 'tutti';
+  renderChips();
+  renderCatalogo();
 }
 
 function renderCatalogo() {
@@ -345,7 +351,7 @@ function attivaTab(nome) {
     const on = b.dataset.tab === nome;
     b.classList.toggle('attiva', on);
     b.classList.toggle('active', on);
-    b.setAttribute('aria-selected', on);
+    b.setAttribute('aria-selected', String(on));
   });
   document.querySelectorAll('#adminPanel .tabpane').forEach(p => { p.hidden = p.id !== `tab-${nome}`; });
 }
@@ -518,13 +524,19 @@ function collegaEventi() {
 
     const btnAzione = e.target.closest('button[data-azione]');
     if (btnAzione && !btnAzione.disabled) { gestisciAzione(btnAzione); return; }
-    const btnFiltro = e.target.closest('button[data-filtro]');
-    if (btnFiltro) {
-      filtroAttivo = btnFiltro.dataset.filtro || 'tutti';
-      renderChips();
-      renderCatalogo();
+
+    /* filtri categoria: chip del catalogo e tessere (.tile) della sezione categorie */
+    const elFiltro = e.target.closest('[data-filtro],[data-cat]');
+    if (elFiltro) {
+      if (elFiltro.tagName === 'A') e.preventDefault();
+      applicaFiltro(elFiltro.dataset.filtro || elFiltro.dataset.cat || 'tutti');
+      if (!elFiltro.closest('#chips')) {
+        const sezione = $('#catalogo');
+        if (sezione) sezione.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       return;
     }
+
     const btnTab = e.target.closest('button[data-tab]');
     if (btnTab) attivaTab(btnTab.dataset.tab);
   });
