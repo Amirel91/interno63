@@ -11,13 +11,17 @@
 <body>
 <header class="nav">
   <a class="brand" href="#top"><span class="dot"></span> Interno <b>63</b></a>
-  <nav class="nav-links" aria-label="Navigazione principale">
+  <div class="nav-actions">
+    <button class="cart-btn" id="cartBtn" aria-label="Apri carrello">🛍️ <span class="badge" id="cartCount">0</span></button>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Apri menu di navigazione" aria-expanded="false" aria-controls="navMenu"><span></span><span></span></button>
+  </div>
+  <nav class="nav-menu" id="navMenu" aria-label="Navigazione principale">
     <a href="#vetrina">Vetrina</a>
     <a href="#catalogo">Catalogo</a>
     <a href="#matrimoni">Matrimoni</a>
+    <a href="#chi-siamo">Chi siamo</a>
     <a href="#contatti">Contatti</a>
   </nav>
-  <button class="cart-btn" id="cartBtn" aria-label="Apri carrello">🛍️ <span class="badge" id="cartCount">0</span></button>
 </header>
 
 <main id="top">
@@ -28,6 +32,7 @@
       <p class="kicker">Bomboniere · Regalo · Cerimonie</p>
       <h1>Ogni occasione merita un ricordo <em>che resta</em>.</h1>
       <p class="lead">Da Interno 63 scegli bomboniere artigianali, cofanetti regalo curati nei dettagli e servizi completi per il tuo matrimonio: selezioniamo ogni pezzo a mano, dal barattolo di miele alla candela profumata.</p>
+      <span class="sticker">✦ Fatto a mano a Monopoli dal 2014</span>
       <div class="cta-row">
         <a class="btn" href="#catalogo">Scopri il catalogo</a>
         <a class="btn btn-ghost" href="#matrimoni">Servizi matrimonio</a>
@@ -40,7 +45,15 @@
     </div>
   </section>
 
-  <!-- TRUST: garanzie del negozio -->
+  <!-- TICKER -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Bomboniere artigianali ✦ Cofanetti regalo ✦ Servizi matrimonio ✦ Consegna in tutta Italia ✦ Personalizzazione con nomi e date ✦ Confetti artigianali italiani ✦</span>
+      <span>Bomboniere artigianali ✦ Cofanetti regalo ✦ Servizi matrimonio ✦ Consegna in tutta Italia ✦ Personalizzazione con nomi e date ✦ Confetti artigianali italiani ✦</span>
+    </div>
+  </div>
+
+  <!-- TRUST -->
   <section class="trust" aria-label="Perché scegliere Interno 63">
     <div class="trust-inner">
       <div class="trust-item reveal">
@@ -163,7 +176,7 @@
   <button class="link" id="adminOpen" type="button">Area amministratore</button>
 </footer>
 
-<!-- Carrello laterale -->
+<!-- Carrello laterale / bottom-sheet -->
 <aside class="drawer" id="cartDrawer" aria-label="Carrello" aria-hidden="true">
   <div class="drawer-head">
     <h2>Il tuo carrello</h2>

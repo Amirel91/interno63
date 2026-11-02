@@ -1,4 +1,4 @@
-/* Interno 63 — vetrina, carrello, dettaglio prodotto, area admin (vanilla ES6+) */
+/* Interno 63 — menu mobile, catalogo, carrello, dettaglio prodotto, area admin (vanilla ES6+) */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -65,6 +65,40 @@ function toast(messaggio) {
   el.classList.add('visibile');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('visibile'), 2600);
+}
+
+/* ---------- Menu mobile (hamburger) ---------- */
+const selMenu = () => $('#navMenu') || document.querySelector('.nav-menu');
+const selBtnMenu = () => $('#menuBtn') || document.querySelector('.menu-btn');
+
+function chiudiMenu() {
+  const menu = selMenu();
+  const btn = selBtnMenu();
+  if (menu) menu.classList.remove('aperta', 'attiva');
+  if (btn) {
+    btn.classList.remove('attiva');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+}
+
+function toggleMenu() {
+  const menu = selMenu();
+  const btn = selBtnMenu();
+  if (!menu || !btn) return;
+  const aperto = !menu.classList.contains('aperta');
+  menu.classList.toggle('aperta', aperto);
+  menu.classList.toggle('attiva', aperto);
+  btn.classList.toggle('attiva', aperto);
+  btn.setAttribute('aria-expanded', String(aperto));
+}
+
+/* A desktop (>768px) il menu è sempre visibile: azzero lo stato al cambio viewport */
+function osservaViewport() {
+  if (!window.matchMedia) return;
+  const mq = window.matchMedia('(min-width:768px)');
+  const applica = () => { if (mq.matches) chiudiMenu(); };
+  if (mq.addEventListener) mq.addEventListener('change', applica);
+  else if (mq.addListener) mq.addListener(applica); /* Safari vecchi */
 }
 
 /* ---------- Animazioni ingresso (class .reveal del CSS) ---------- */
@@ -155,6 +189,7 @@ function apriModale(sel) {
   if (!m) return;
   m.hidden = false;
   requestAnimationFrame(() => m.classList.add('aperta'));
+  chiudiMenu();
   mostraScrim();
   bloccaScroll(true);
 }
@@ -164,6 +199,7 @@ function apriCarrello() {
   if (!d) return;
   d.classList.add('aperta');
   d.setAttribute('aria-hidden', 'false');
+  chiudiMenu();
   mostraScrim();
   bloccaScroll(true);
 }
@@ -175,6 +211,7 @@ function chiudiTutto() {
   });
   const d = $('#cartDrawer');
   if (d) { d.classList.remove('aperta'); d.setAttribute('aria-hidden', 'true'); }
+  chiudiMenu();
   nascondiScrim();
   bloccaScroll(false);
 }
@@ -187,12 +224,14 @@ function apriDettaglio(id) {
   const media = p.img && String(p.img).trim()
     ? `<img src="${esc(p.img)}" alt="${esc(p.nome)}">`
     : `<div class="segnaposto" aria-hidden="true">${ICONE[p.categoria] || '✿'}</div>`;
-  corpo.innerHTML = `${media}
-    <span class="categoria">${CATEGORIE[p.categoria] || ''}</span>
-    <h3>${esc(p.nome)}</h3>
-    <p class="desc">${esc(p.descrizione) || 'Articolo selezionato a mano in negozio: contattaci per la personalizzazione.'}</p>
-    <p class="prezzo">${euro(p.prezzo)}</p>
-    <button class="btn" type="button" data-azione="aggiungi" data-id="${p.id}">Aggiungi al carrello</button>`;
+  corpo.innerHTML = `<div class="dettaglio-media">${media}</div>
+    <div class="dettaglio-info">
+      <span class="categoria">${CATEGORIE[p.categoria] || ''}</span>
+      <h3>${esc(p.nome)}</h3>
+      <p class="desc">${esc(p.descrizione) || 'Articolo selezionato a mano in negozio: contattaci per la personalizzazione.'}</p>
+      <p class="prezzo">${euro(p.prezzo)}</p>
+      <button class="btn" type="button" data-azione="aggiungi" data-id="${p.id}">Aggiungi al carrello</button>
+    </div>`;
   apriModale('#productModal');
 }
 
@@ -474,6 +513,9 @@ function gestisciAzione(btn) {
 /* ---------- Eventi ---------- */
 function collegaEventi() {
   document.addEventListener('click', e => {
+    /* chiudi il menu mobile dopo il tap su un link di navigazione */
+    if (e.target.closest('.nav-menu a')) chiudiMenu();
+
     const btnAzione = e.target.closest('button[data-azione]');
     if (btnAzione && !btnAzione.disabled) { gestisciAzione(btnAzione); return; }
     const btnFiltro = e.target.closest('button[data-filtro]');
@@ -491,6 +533,10 @@ function collegaEventi() {
     const el = $(selettore);
     if (el) el.addEventListener(evento, fn);
   };
+
+  /* hamburger: prova prima l'id, poi la classe (guard clause su null) */
+  const btnMenu = selBtnMenu();
+  if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
 
   su('#cartBtn', 'click', apriCarrello);
   su('#cartClose', 'click', chiudiTutto);
@@ -540,6 +586,7 @@ function init() {
   renderCarrello();
   collegaEventi();
   osservaAnimazioni();
+  osservaViewport();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
