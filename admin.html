@@ -125,9 +125,36 @@
     <div class="edit-card">
       <div class="edit-head"><h2>⚙️ Dati del negozio</h2></div>
       <form class="form-grid" id="setForm" autocomplete="off">
-        <label>Nome negozio<input id="sName" required maxlength="40"></label>
-        <label>Telefono<input id="sPhone" required maxlength="30"></label>
-        <p class="hint wide">Nome e telefono compaiono nel footer di homepage e catalogo.</p>
+        <label>Nome negozio *
+          <input id="sName" required maxlength="40" placeholder="Interno 63">
+        </label>
+        <label>Telefono *
+          <input id="sPhone" required maxlength="30" placeholder="351 234 5678">
+        </label>
+        <label class="wide">Email
+          <input id="sEmail" type="email" maxlength="60" placeholder="info@interno63.it">
+        </label>
+        <label>Via e numero civico
+          <input id="sVia" maxlength="60" placeholder="Via Roma 63">
+        </label>
+        <label>CAP
+          <input id="sCap" maxlength="6" inputmode="numeric" placeholder="70043">
+        </label>
+        <label>Città
+          <input id="sCitta" maxlength="40" placeholder="Monopoli">
+        </label>
+        <label>Provincia <span class="hint">(sigla)</span>
+          <input id="sProv" maxlength="2" placeholder="BA" style="text-transform:uppercase">
+        </label>
+        <label class="wide">Orari di apertura <span class="hint">(opzionale)</span>
+          <input id="sOrari" maxlength="90" placeholder="Lun–Sab 9:30–13:00 e 16:30–20:00">
+        </label>
+        <div class="anteprima wide" aria-live="polite">
+          <p class="anteprima-tit">Anteprima riga contatti</p>
+          <p class="hint" id="setAnteprima">…</p>
+          <p class="hint">Così compariranno i dati nel footer di homepage e catalogo, aggiornati mentre scrivi.</p>
+        </div>
+        <p class="hint wide">Salvando, nome, sede, orari e contatti si aggiornano nel footer di homepage e catalogo.</p>
         <label class="check wide"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche agli articoli)</label>
         <label class="check wide"><input type="checkbox" id="sResetCat"> Ripristina anche le categorie predefinite</label>
         <div class="cta-row left wide"><button class="btn" type="submit">Salva dati</button></div>

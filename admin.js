@@ -1,5 +1,6 @@
-/* Interno 63 — admin.js: pannello admin.html. Gestione guidata di prodotti e categorie,
-   richieste d'ordine e dati negozio. Dati condivisi con lo storefront via localStorage. */
+/* Interno 63 — admin.js: pannello admin.html. Gestione guidata di articoli, categorie,
+   richieste d'ordine e dati completi del negozio (nome, contatti, indirizzo).
+   Dati condivisi con lo storefront via localStorage. */
 
 (() => {
   'use strict';
@@ -25,7 +26,28 @@
 
   const EMOJI_CATEGORIE = ['🎀','📦','🎁','💍','🕯️','🍯','🫙','🌿','🌸','🌼','🕊️','🥂','🍰','🍼','🧺','🧸','✨','🫖'];
 
-  const NEGOZIO_INIZIALE = { nome: 'Interno 63', telefono: '351 234 5678' };
+  /* Dati negozio iniziali: tutto ciò che compare nei footer del sito */
+  const NEGOZIO_INIZIALE = {
+    nome: 'Interno 63',
+    telefono: '351 234 5678',
+    via: 'Via Roma 63',
+    cap: '70043',
+    citta: 'Monopoli',
+    prov: 'BA',
+    email: 'info@interno63.it'
+  };
+
+  /* Mappa chiave ↔ campo del form "Dati negozio" (più selettori possibili = robustezza) */
+  const CAMPI_NEGOZIO = [
+    { chiave: 'nome', sel: ['#sName'], label: 'Nome negozio', obbligatorio: true },
+    { chiave: 'telefono', sel: ['#sPhone', '#sTel'], label: 'Telefono', obbligatorio: true },
+    { chiave: 'via', sel: ['#sVia', '#sIndirizzo', '#sAddress'], label: 'Via e numero civico' },
+    { chiave: 'cap', sel: ['#sCap'], label: 'CAP' },
+    { chiave: 'citta', sel: ['#sCitta', '#sCity'], label: 'Città' },
+    { chiave: 'prov', sel: ['#sProv', '#sProvincia'], label: 'Provincia' },
+    { chiave: 'email', sel: ['#sEmail', '#sMail'], label: 'Email' }
+  ];
+
   const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', ordini: 'i63-ordini', negozio: 'i63-negozio', sessione: 'i63-admin' };
   const PASSWORD_DEMO = 'interno63';
 
@@ -35,12 +57,14 @@
   let ordini = [];
   let negozio = { ...NEGOZIO_INIZIALE };
   let iconaScelta = '🎁';
+  let tornaAProdotti = false; /* crea-categoria partita dal form articolo */
 
   /* ---------- Utility ---------- */
   const $ = sel => document.querySelector(sel);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const euro = n => `€ ${(Number(n) || 0).toFixed(2)}`;
   const slug = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cat-' + Date.now();
+  const primoEsistente = selettori => (Array.isArray(selettori) ? selettori : [selettori]).map(s => $(s)).find(Boolean) || null;
 
   function leggiJSON(chiave, predefinito) {
     try {
@@ -99,6 +123,8 @@
     renderOrdini();
     applicaNegozioForm();
     aggiornaStats();
+    aggiornaContatoreDesc();
+    aggiornaAnteprima();
     mostraTab('prod');
   }
 
@@ -126,14 +152,24 @@
   }
 
   /* ---------- Modulo prodotti ---------- */
+  function setModalitaModifica(attiva) {
+    const titolo = $('#formTitolo');
+    const annulla = $('#annullaModifica');
+    const salva = $('#prodSave');
+    if (titolo) titolo.textContent = attiva ? '✏️ Modifica articolo' : '➕ Aggiungi un articolo';
+    if (annulla) annulla.hidden = !attiva;
+    if (salva) salva.textContent = attiva ? 'Salva modifiche' : 'Salva articolo';
+  }
+
   function riempiForm(p) {
-    aggiornaSelectCategorie();
+    aggiornaSelectCategorie(p.categoria);
     const campi = { fId: String(p.id), fName: p.nome, fCat: p.categoria, fPrice: String(p.prezzo), fImg: p.img || '', fDesc: p.descrizione || '' };
     Object.entries(campi).forEach(([id, valore]) => { const el = $('#' + id); if (el) el.value = valore; });
     const feat = $('#fFeat');
     if (feat) feat.checked = Boolean(p.vetrina);
-    const salva = $('#prodSave');
-    if (salva) salva.textContent = 'Salva modifiche';
+    setModalitaModifica(true);
+    aggiornaContatoreDesc();
+    aggiornaAnteprima();
   }
 
   function pulisciForm() {
@@ -141,26 +177,66 @@
     if (form) form.reset();
     const id = $('#fId');
     if (id) id.value = '';
-    const salva = $('#prodSave');
-    if (salva) salva.textContent = 'Salva prodotto';
+    setModalitaModifica(false);
+    aggiornaContatoreDesc();
+    aggiornaAnteprima();
   }
 
-  function aggiornaSelectCategorie() {
+  function aggiornaSelectCategorie(preferita) {
     const sel = $('#fCat');
     if (!sel) return;
-    const prima = categorie[0] ? categorie[0].id : '';
+    const corrente = preferita || sel.value;
     sel.innerHTML = categorie.map(c => `<option value="${esc(c.id)}">${esc(c.icona)} ${esc(c.nome)}</option>`).join('');
-    if (prima) sel.value = prima;
+    const valida = categorie.some(c => c.id === corrente);
+    if (valida) sel.value = corrente;
+    else if (categorie[0]) sel.value = categorie[0].id;
+  }
+
+  function selezionaCategoria(id) {
+    const sel = $('#fCat');
+    if (sel && categorie.some(c => c.id === id)) sel.value = id;
+    aggiornaAnteprima();
+  }
+
+  /* Anteprima live della card mentre si compila il form */
+  function aggiornaAnteprima() {
+    const box = $('#anteprimaCard');
+    if (!box) return;
+    const nome = (($('#fName') && $('#fName').value) || '').trim();
+    const prezzo = Number(($('#fPrice') && $('#fPrice').value) || 0);
+    const cat = ($('#fCat') && $('#fCat').value) || '';
+    const img = (($('#fImg') && $('#fImg').value) || '').trim();
+    const desc = (($('#fDesc') && $('#fDesc').value) || '').trim();
+    const vetrina = Boolean($('#fFeat') && $('#fFeat').checked);
+    const media = img
+      ? `<img src="${esc(img)}" alt="" loading="lazy">`
+      : `<div class="segnaposto" aria-hidden="true">${iconaCat(cat)}</div>`;
+    box.innerHTML = `<article class="product">
+      <div class="product-media">${media}${vetrina ? '<span class="badge-vetrina">In vetrina</span>' : ''}</div>
+      <span class="categoria">${esc(nomeCat(cat))}</span>
+      <h3>${nome ? esc(nome) : '<span class="hint">Nome dell\'articolo…</span>'}</h3>
+      ${desc ? `<p class="hint">${esc(desc)}</p>` : ''}
+      <p class="prezzo">${euro(prezzo)}</p>
+      <button class="btn" type="button" disabled aria-disabled="true">Aggiungi al carrello</button>
+    </article>`;
+  }
+
+  function aggiornaContatoreDesc() {
+    const cont = $('#fDescCount');
+    const campo = $('#fDesc');
+    if (cont && campo) cont.textContent = `${campo.value.length}/220`;
   }
 
   function salvaProdotto(evento) {
     evento.preventDefault();
     const nome = (($('#fName') && $('#fName').value) || '').trim();
     if (!nome) { toast('Il nome dell\'articolo è obbligatorio.'); return; }
+    const prezzoGrezzo = Number(($('#fPrice') && $('#fPrice').value) || 0);
+    if (!Number.isFinite(prezzoGrezzo) || prezzoGrezzo < 0) { toast('Inserisci un prezzo valido (maggiore o uguale a 0).'); return; }
     const dati = {
       nome,
-      categoria: (($('#fCat') && $('#fCat').value) || (categorie[0] ? categorie[0].id : 'regalo')),
-      prezzo: Math.max(0, Number(($('#fPrice') && $('#fPrice').value) || 0)),
+      categoria: ($('#fCat') && $('#fCat').value) || (categorie[0] ? categorie[0].id : 'regalo'),
+      prezzo: Math.max(0, prezzoGrezzo),
       img: (($('#fImg') && $('#fImg').value) || '').trim(),
       descrizione: (($('#fDesc') && $('#fDesc').value) || '').trim(),
       vetrina: Boolean($('#fFeat') && $('#fFeat').checked)
@@ -249,32 +325,42 @@
     ).join('');
   }
 
+  function setModalitaModificaCat(attiva) {
+    const titolo = $('#catTitolo');
+    const annulla = $('#annullaCat');
+    if (titolo) titolo.textContent = attiva ? '✏️ Modifica categoria' : '🏷️ Nuova categoria';
+    if (annulla) annulla.hidden = !attiva;
+  }
+
   function riempiFormCategoria(c) {
-    const id = $('#fcId');
+    const id = $('#cId');
     if (id) id.value = c.id;
-    const nome = $('#fcName');
+    const nome = $('#cNome');
     if (nome) nome.value = c.nome;
     iconaScelta = c.icona || '🎁';
     renderIconPicker();
+    setModalitaModificaCat(true);
     if (nome) nome.focus();
   }
 
   function pulisciFormCategoria() {
     const form = $('#catForm');
     if (form) form.reset();
-    const id = $('#fcId');
+    const id = $('#cId');
     if (id) id.value = '';
     iconaScelta = '🎁';
     renderIconPicker();
+    setModalitaModificaCat(false);
   }
 
   function salvaCategoria(evento) {
     evento.preventDefault();
-    const nome = (($('#fcName') && $('#fcName').value) || '').trim();
+    const nome = (($('#cNome') && $('#cNome').value) || '').trim();
     if (!nome) { toast('Dai un nome alla categoria.'); return; }
     if (nome.length > 30) { toast('Nome categoria troppo lungo: massimo 30 caratteri.'); return; }
     if (!iconaScelta) iconaScelta = '🎁';
-    const idModifica = ($('#fcId') && $('#fcId').value) || '';
+    const idModifica = ($('#cId') && $('#cId').value) || '';
+    let idPronto = idModifica;
     if (idModifica) {
       const c = categorie.find(x => x.id === idModifica);
       if (c) { c.nome = nome; c.icona = iconaScelta; toast(`Categoria “${nome}” aggiornata.`); }
@@ -286,14 +372,21 @@
       let id = slug(nome);
       while (categorie.some(c => c.id === id)) id += '-2';
       categorie.push({ id, nome, icona: iconaScelta });
+      idPronto = id;
       toast(`Categoria “${nome}” creata: già selezionabile nei prodotti.`);
     }
     scriviJSON(CHIAVI.categorie, categorie);
     pulisciFormCategoria();
     renderCategorie();
-    aggiornaSelectCategorie();
+    aggiornaSelectCategorie(idPronto);
     renderTabella();
     aggiornaStats();
+    /* Ritorno automatico se la categoria è nata dal form articolo */
+    if (tornaAProdotti) {
+      tornaAProdotti = false;
+      mostraTab('prod');
+      toast(`Categoria “${nome}” pronta: la trovi già selezionata nell'articolo.`);
+    }
   }
 
   function eliminaCategoria(id) {
@@ -307,7 +400,7 @@
     if (!confirm(`Eliminare la categoria “${c.nome}”?`)) return;
     categorie = categorie.filter(x => x.id !== id);
     scriviJSON(CHIAVI.categorie, categorie);
-    if (($('#fcId') && $('#fcId').value) === id) pulisciFormCategoria();
+    if (($('#cId') && $('#cId').value) === id) pulisciFormCategoria();
     renderCategorie();
     aggiornaSelectCategorie();
     renderTabella();
@@ -383,34 +476,56 @@
     toast('Richiesta d\'ordine eliminata.');
   }
 
-  /* ---------- Dati negozio ---------- */
+  /* ---------- Dati negozio (tutti i campi modificabili) ---------- */
   function applicaNegozioForm() {
-    const nome = $('#sName');
-    if (nome) nome.value = negozio.nome || NEGOZIO_INIZIALE.nome;
-    const tel = $('#sPhone');
-    if (tel) tel.value = negozio.telefono || NEGOZIO_INIZIALE.telefono;
+    CAMPI_NEGOZIO.forEach(c => {
+      const el = primoEsistente(c.sel);
+      if (el) el.value = negozio[c.chiave] ?? '';
+    });
   }
 
   function salvaNegozio(evento) {
     evento.preventDefault();
-    negozio.nome = (($('#sName') && $('#sName').value) || '').trim() || NEGOZIO_INIZIALE.nome;
-    negozio.telefono = (($('#sPhone') && $('#sPhone').value) || '').trim() || NEGOZIO_INIZIALE.telefono;
+    let primoErrore = '';
+    CAMPI_NEGOZIO.forEach(c => {
+      const el = primoEsistente(c.sel);
+      if (!el) return;
+      const valore = String(el.value || '').trim();
+      if (!valore && c.obbligatorio && !primoErrore) primoErrore = `Compila il campo “${c.label}”: è obbligatorio.`;
+      negozio[c.chiave] = valore;
+    });
+    if (primoErrore) { toast(primoErrore); return; }
+    negozio.nome = negozio.nome || NEGOZIO_INIZIALE.nome;
+    negozio.telefono = negozio.telefono || NEGOZIO_INIZIALE.telefono;
     scriviJSON(CHIAVI.negozio, negozio);
-    let messaggio = 'Dati negozio salvati: aggiornati anche in home e catalogo.';
-    const reset = $('#sReset');
-    if (reset && reset.checked) {
+    let messaggio = 'Dati negozio salvati: aggiornati in home e nel catalogo.';
+
+    const resetCatEl = $('#sResetCat');
+    const resetProdEl = $('#sReset');
+    const resetCategorie = Boolean(resetCatEl && resetCatEl.checked);
+    const resetCatalogo = Boolean(resetProdEl && resetProdEl.checked) || resetCategorie;
+    if (resetCatalogo) {
       catalogo = CATALOGO_INIZIALE.map(p => ({ ...p }));
-      categorie = CATEGORIE_INIZIALI.map(c => ({ ...c }));
       scriviJSON(CHIAVI.catalogo, catalogo);
+    }
+    if (resetCategorie) {
+      categorie = CATEGORIE_INIZIALI.map(c => ({ ...c }));
       scriviJSON(CHIAVI.categorie, categorie);
+    }
+    if (resetCatalogo || resetCategorie) {
+      /* Articoli rimasti su categorie cancellate → prima categoria disponibile */
+      const prima = categorie[0] ? categorie[0].id : '';
+      catalogo.forEach(p => { if (!categorie.some(c => c.id === p.categoria)) p.categoria = prima; });
+      scriviJSON(CHIAVI.catalogo, catalogo);
       pulisciForm();
       pulisciFormCategoria();
       aggiornaSelectCategorie();
       renderTabella();
       renderCategorie();
       aggiornaStats();
-      reset.checked = false;
-      messaggio = 'Dati salvati: catalogo e categorie ripristinati ai valori iniziali.';
+      if (resetProdEl) resetProdEl.checked = false;
+      if (resetCatEl) resetCatEl.checked = false;
+      messaggio = 'Dati salvati: catalogo' + (resetCategorie ? ' e categorie' : '') + ' ripristinati ai valori iniziali.';
     }
     toast(messaggio);
   }
@@ -443,11 +558,25 @@
 
     /* Prodotti */
     su('#prodForm', 'submit', salvaProdotto);
+    su('#prodForm', 'input', () => { aggiornaContatoreDesc(); aggiornaAnteprima(); });
     su('#prodReset', 'click', () => {
       pulisciForm();
       const nome = $('#fName');
       if (nome) nome.focus();
       toast('Modulo pulito: pronto per un nuovo articolo.');
+    });
+    su('#annullaModifica', 'click', () => {
+      pulisciForm();
+      const nome = $('#fName');
+      if (nome) nome.focus();
+      toast('Modifica annullata: modulo pronto per un nuovo articolo.');
+    });
+    su('#vaiCategorie', 'click', () => {
+      tornaAProdotti = true;
+      mostraTab('cat');
+      const nome = $('#cNome');
+      if (nome) nome.focus();
+      toast('Crea la categoria: al salvataggio torni qui con lei già selezionata.');
     });
     su('#adminTable', 'click', e => {
       const btn = e.target.closest('button[data-azione]');
@@ -476,9 +605,15 @@
     su('#catForm', 'submit', salvaCategoria);
     su('#catReset', 'click', () => {
       pulisciFormCategoria();
-      const nome = $('#fcName');
+      const nome = $('#cNome');
       if (nome) nome.focus();
       toast('Modulo categoria pulito.');
+    });
+    su('#annullaCat', 'click', () => {
+      pulisciFormCategoria();
+      const nome = $('#cNome');
+      if (nome) nome.focus();
+      toast('Modifica categoria annullata.');
     });
     su('#iconPicker', 'click', e => {
       const btn = e.target.closest('button[data-icona]');
