@@ -1,4 +1,4 @@
-/* Interno 63 — menu, catalogo, filtri, carrello, ordini e area admin (vanilla ES6+, zero dipendenze) */
+/* Interno 63 — storefront condiviso: index.html (vetrina) + shop.html (catalogo con ricerca, filtri e ordinamento). L'admin vive in admin.html + admin.js. */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -22,8 +22,8 @@ const CATEGORIE = {
 const ICONE = { bomboniere: '🎀', cofanetti: '📦', regalo: '🎁', matrimonio: '💍' };
 const NEGOZIO_INIZIALE = { nome: 'Interno 63', telefono: '351 234 5678' };
 
+/* Chiavi condivise con admin.js: le modifiche fatte in admin.html si riflettono qui */
 const CHIAVI = { catalogo: 'i63-catalogo', carrello: 'i63-carrello', ordini: 'i63-ordini', admin: 'i63-admin', negozio: 'i63-negozio' };
-const PASSWORD_ADMIN = 'interno63'; /* password demo lato client, nessun backend */
 
 /* ---------- Stato ---------- */
 let catalogo = [];
@@ -31,7 +31,8 @@ let carrello = [];
 let ordini = [];
 let negozio = { ...NEGOZIO_INIZIALE };
 let filtroAttivo = 'tutti';
-let tabAdmin = 'prod';
+let testoRicerca = '';
+let ordinamento = 'default';
 
 /* ---------- Utility ---------- */
 const $ = sel => document.querySelector(sel);
@@ -140,20 +141,28 @@ function renderChips() {
   if (!box) return;
   box.innerHTML = Object.entries(CATEGORIE).map(([k, etichetta]) => {
     const attiva = filtroAttivo === k;
-    return `<button class="chip${attiva ? ' attiva active' : ''}" type="button" role="tab" aria-selected="${attiva}" data-filtro="${k}">${etichetta}</button>`;
+    return `<button class="chip${attiva ? ' attiva' : ''}" type="button" role="tab" aria-selected="${attiva}" data-filtro="${k}">${etichetta}</button>`;
   }).join('');
 }
 
-function applicaFiltro(valore) {
-  filtroAttivo = CATEGORIE[valore] ? valore : 'tutti';
-  renderChips();
-  renderCatalogo();
+/* Ordinamento robusto: accetta più alias di valore dal select dello shop */
+function ordinaLista(lista) {
+  const copia = [...lista];
+  const ordine = String(ordinamento || 'default');
+  if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres') copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
+  else if (ordine === 'prezzo-desc' || ordine === 'prezzo-dec') copia.sort((a, b) => (b.prezzo || 0) - (a.prezzo || 0));
+  else if (ordine === 'nome' || ordine === 'nome-asc') copia.sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it'));
+  else copia.sort((a, b) => Number(b.vetrina === true) - Number(a.vetrina === true) || (a.id || 0) - (b.id || 0));
+  return copia;
 }
 
 function renderCatalogo() {
   const griglia = $('#productGrid');
-  if (!griglia) return;
-  const lista = filtroAttivo === 'tutti' ? catalogo : catalogo.filter(p => p.categoria === filtroAttivo);
+  if (!griglia) return; /* index.html non ha la griglia catalogo: vive in shop.html */
+  const q = testoRicerca.trim().toLowerCase();
+  let lista = filtroAttivo === 'tutti' ? catalogo.slice() : catalogo.filter(p => p.categoria === filtroAttivo);
+  if (q) lista = lista.filter(p => `${p.nome} ${p.descrizione} ${CATEGORIE[p.categoria] || ''}`.toLowerCase().includes(q));
+  lista = ordinaLista(lista);
   griglia.innerHTML = lista.map(schedaProdotto).join('');
   const vuoto = $('#emptyMsg');
   if (vuoto) vuoto.hidden = lista.length > 0;
@@ -161,14 +170,14 @@ function renderCatalogo() {
 
 function renderVetrina() {
   const griglia = $('#featuredGrid');
-  if (!griglia) return;
+  if (!griglia) return; /* shop.html non ha la vetrina */
   const scelti = catalogo.filter(p => p.vetrina).slice(0, 3);
   griglia.innerHTML = scelti.map(schedaProdotto).join('');
   const sezione = $('#vetrina');
   if (sezione) sezione.classList.toggle('hidden', scelti.length === 0);
 }
 
-/* ---------- Overlay: scrim, modali, drawer, blocco scroll ---------- */
+/* ---------- Overlay: scrim, modale prodotto, drawer, blocco scroll ---------- */
 let scrimTimer = null;
 
 function mostraScrim() {
@@ -211,10 +220,8 @@ function apriCarrello() {
 }
 
 function chiudiTutto() {
-  ['#productModal', '#adminModal'].forEach(sel => {
-    const m = $(sel);
-    if (m) { m.classList.remove('aperta'); m.hidden = true; }
-  });
+  const m = $('#productModal');
+  if (m) { m.classList.remove('aperta'); m.hidden = true; }
   const d = $('#cartDrawer');
   if (d) { d.classList.remove('aperta'); d.setAttribute('aria-hidden', 'true'); }
   chiudiMenu();
@@ -243,12 +250,12 @@ function apriDettaglio(id) {
 
 /* ---------- Carrello ---------- */
 function totaleCarrello() {
-  return carrello.reduce((somma, r) => somma + r.prezzo * r.qta, 0);
+  return carrello.reduce((somma, r) => somma + (r.prezzo || 0) * (r.qta || 0), 0);
 }
 
 function renderCarrello() {
   const badge = $('#cartCount');
-  if (badge) badge.textContent = String(carrello.reduce((s, r) => s + r.qta, 0));
+  if (badge) badge.textContent = String(carrello.reduce((s, r) => s + (r.qta || 0), 0));
   const lista = $('#cartItems');
   if (!lista) return;
   lista.innerHTML = carrello.length
@@ -295,7 +302,7 @@ function cambiaQta(id, delta) {
   renderCarrello();
 }
 
-/* ---------- Ordini ---------- */
+/* ---------- Ordini (visibili poi nella pagina admin) ---------- */
 function inviaOrdine() {
   if (!carrello.length) { toast('Il carrello è vuoto: aggiungi almeno un articolo.'); return; }
   const nome = (($('#ordine-nome') && $('#ordine-nome').value) || '').trim();
@@ -313,12 +320,11 @@ function inviaOrdine() {
   carrello = [];
   scriviJSON(CHIAVI.carrello, carrello);
   renderCarrello();
-  renderAdminOrdini();
   chiudiTutto();
   toast(`Grazie ${nome}! Richiesta inviata: ti ricontattiamo per conferma e consegna.`);
 }
 
-/* ---------- Dati negozio ---------- */
+/* ---------- Dati negozio (modificabili dall'admin) ---------- */
 function applicaDatiNegozio() {
   const piede = $('#footName');
   if (piede) piede.textContent = negozio.nome || NEGOZIO_INIZIALE.nome;
@@ -326,257 +332,39 @@ function applicaDatiNegozio() {
   if (tel) tel.textContent = negozio.telefono || NEGOZIO_INIZIALE.telefono;
 }
 
-/* ---------- Area amministratore ---------- */
-function isAdmin() { return leggiJSON(CHIAVI.admin, false) === true; }
-
-function mostraAdmin() {
-  const attivo = isAdmin();
-  const gate = $('#gateForm');
-  const pannello = $('#adminPanel');
-  if (gate) gate.hidden = attivo;
-  if (pannello) pannello.hidden = !attivo;
-  if (!attivo) return;
-  attivaTab(tabAdmin);
-  renderAdminProdotti();
-  renderAdminOrdini();
-  const sNome = $('#sName');
-  if (sNome) sNome.value = negozio.nome || '';
-  const sTel = $('#sPhone');
-  if (sTel) sTel.value = negozio.telefono || '';
-}
-
-function attivaTab(nome) {
-  tabAdmin = nome;
-  document.querySelectorAll('#adminTabs .tab').forEach(b => {
-    const on = b.dataset.tab === nome;
-    b.classList.toggle('attiva', on);
-    b.classList.toggle('active', on);
-    b.setAttribute('aria-selected', String(on));
-  });
-  document.querySelectorAll('#adminPanel .tabpane').forEach(p => { p.hidden = p.id !== `tab-${nome}`; });
-}
-
-function renderAdminProdotti() {
-  const box = $('#adminTable');
-  if (!box) return;
-  const righe = catalogo.map(p => `<tr>
-      <td>${esc(p.nome)}</td>
-      <td>${CATEGORIE[p.categoria] || esc(p.categoria)}</td>
-      <td>${euro(p.prezzo)}</td>
-      <td>${p.vetrina ? '★ In vetrina' : '—'}</td>
-      <td class="azioni">
-        <button type="button" class="btn-mini" data-azione="vetrina" data-id="${p.id}" title="${p.vetrina ? 'Togli dalla vetrina' : 'Metti in vetrina'}">${p.vetrina ? '★' : '☆'}</button>
-        <button type="button" class="btn-mini" data-azione="modifica" data-id="${p.id}">Modifica</button>
-        <button type="button" class="btn-mini distruttivo" data-azione="elimina" data-id="${p.id}">Elimina</button>
-      </td>
-    </tr>`).join('');
-  box.innerHTML = `<table class="tabella">
-    <thead><tr><th>Prodotto</th><th>Categoria</th><th>Prezzo</th><th>Vetrina</th><th>Azioni</th></tr></thead>
-    <tbody>${righe || '<tr><td colspan="5" class="vuoto">Nessun prodotto: aggiungine uno dal modulo sopra.</td></tr>'}</tbody>
-  </table>`;
-}
-
-function renderAdminOrdini() {
-  const box = $('#tab-ord');
-  if (!box) return;
-  box.innerHTML = ordini.map(o => `<article class="ordine">
-      <header><strong>Richiesta #${String(o.id).slice(-5)}</strong><time>${esc(o.data)}</time></header>
-      <p><strong>${esc(o.cliente)}</strong>${o.recapito ? ` · ${esc(o.recapito)}` : ''}</p>
-      <p>${esc(o.articoli)}</p>
-      <p class="tot">Totale: ${euro(o.totale)}</p>
-      <button type="button" class="btn-mini distruttivo" data-azione="elimina-ordine" data-id="${o.id}">Segna come evasa</button>
-    </article>`).join('') || '<p class="vuoto">Nessuna richiesta: ogni ordine inviato dal carrello comparirà qui.</p>';
-}
-
-function resetFormProdotto() {
-  const form = $('#prodForm');
-  if (form) form.reset();
-  const id = $('#fId');
-  if (id) id.value = '';
-  const salva = $('#prodSave');
-  if (salva) salva.textContent = 'Salva prodotto';
-}
-
-function caricaInForm(id) {
-  const p = catalogo.find(x => x.id === Number(id));
-  if (!p) return;
-  const imposta = (sel, val) => { const el = $(sel); if (el) el.value = val; };
-  imposta('#fId', p.id);
-  imposta('#fName', p.nome);
-  imposta('#fCat', p.categoria);
-  imposta('#fPrice', p.prezzo);
-  imposta('#fImg', p.img || '');
-  imposta('#fDesc', p.descrizione || '');
-  const vetrina = $('#fFeat');
-  if (vetrina) vetrina.checked = !!p.vetrina;
-  const salva = $('#prodSave');
-  if (salva) salva.textContent = `Salva modifiche a “${p.nome.slice(0, 24)}”`;
-}
-
-function salvaProdotto(evento) {
-  evento.preventDefault();
-  const nome = (($('#fName') && $('#fName').value) || '').trim();
-  const prezzoGrezzo = (($('#fPrice') && $('#fPrice').value) || '').replace(',', '.').trim();
-  const prezzo = parseFloat(prezzoGrezzo);
-  const categoria = ($('#fCat') && $('#fCat').value) || 'regalo';
-  const descrizione = (($('#fDesc') && $('#fDesc').value) || '').trim();
-  const img = (($('#fImg') && $('#fImg').value) || '').trim();
-  const vetrina = !!($('#fFeat') && $('#fFeat').checked);
-  if (!nome) { toast('Il nome del prodotto è obbligatorio.'); return; }
-  if (!Number.isFinite(prezzo) || prezzo < 0) { toast('Inserisci un prezzo valido, ad esempio 19.90.'); return; }
-  if (img && !/^https?:\/\/\S+$/i.test(img)) { toast('L\'URL della foto deve iniziare con http:// o https://'); return; }
-  const idModifica = Number(($('#fId') && $('#fId').value) || 0);
-  const esistente = catalogo.find(p => p.id === idModifica);
-  if (esistente) {
-    Object.assign(esistente, { nome, prezzo, categoria, descrizione, img, vetrina });
-    toast(`“${nome}” aggiornato.`);
-  } else {
-    catalogo.push({ id: Date.now(), nome, prezzo, categoria, descrizione, img, vetrina });
-    toast(`“${nome}” aggiunto al catalogo.`);
-  }
-  scriviJSON(CHIAVI.catalogo, catalogo);
-  resetFormProdotto();
-  renderCatalogo();
-  renderVetrina();
-  renderAdminProdotti();
-}
-
-function salvaDati(evento) {
-  evento.preventDefault();
-  const nome = (($('#sName') && $('#sName').value) || '').trim();
-  const telefono = (($('#sPhone') && $('#sPhone').value) || '').trim();
-  if (!nome) { toast('Il nome del negozio è obbligatorio.'); return; }
-  negozio = { nome, telefono };
-  scriviJSON(CHIAVI.negozio, negozio);
-  applicaDatiNegozio();
-  const reset = $('#sReset');
-  if (reset && reset.checked) {
-    if (!confirm('Ripristinare il catalogo iniziale? Le modifiche andranno perse.')) return;
-    catalogo = CATALOGO_INIZIALE.map(p => ({ ...p }));
-    carrello = [];
-    scriviJSON(CHIAVI.catalogo, catalogo);
-    scriviJSON(CHIAVI.carrello, carrello);
-    renderCatalogo();
-    renderVetrina();
-    renderCarrello();
-    renderAdminProdotti();
-    reset.checked = false;
-    toast('Dati salvati e catalogo ripristinato.');
-  } else {
-    toast('Dati negozio salvati.');
-  }
-}
-
-/* ---------- Azioni delegate ---------- */
+/* ---------- Azioni delegate (solo storefront) ---------- */
 function gestisciAzione(btn) {
   if (!btn) return;
   const { azione, id } = btn.dataset;
-
   if (azione === 'aggiungi') { aggiungiAlCarrello(id); return; }
   if (azione === 'dettaglio') { apriDettaglio(id); return; }
   if (azione === 'piu') { cambiaQta(id, 1); return; }
   if (azione === 'meno') { cambiaQta(id, -1); return; }
-  if (azione === 'invia-ordine') { inviaOrdine(); return; }
-
-  if (azione === 'vetrina') {
-    const p = catalogo.find(x => x.id === Number(id));
-    if (!p) return;
-    p.vetrina = !p.vetrina;
-    scriviJSON(CHIAVI.catalogo, catalogo);
-    renderAdminProdotti();
-    renderVetrina();
-    toast(p.vetrina ? `“${p.nome}” messo in vetrina.` : `“${p.nome}” tolto dalla vetrina.`);
-    return;
-  }
-
-  if (azione === 'modifica') {
-    caricaInForm(id);
-    const nomeTab = $('#tab-prod');
-    if (nomeTab) nomeTab.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-
-  if (azione === 'elimina') {
-    const p = catalogo.find(x => x.id === Number(id));
-    if (!p || !confirm(`Eliminare “${p.nome}” dal catalogo?`)) return;
-    catalogo = catalogo.filter(x => x.id !== Number(id));
-    carrello = carrello.filter(r => r.id !== Number(id));
-    scriviJSON(CHIAVI.catalogo, catalogo);
-    scriviJSON(CHIAVI.carrello, carrello);
-    renderCatalogo(); renderVetrina(); renderCarrello(); renderAdminProdotti();
-    toast('Prodotto eliminato.');
-    return;
-  }
-
-  if (azione === 'elimina-ordine') {
-    ordini = ordini.filter(o => o.id !== Number(id));
-    scriviJSON(CHIAVI.ordini, ordini);
-    renderAdminOrdini();
-    toast('Richiesta segnata come evasa.');
-  }
+  if (azione === 'invia-ordine') { inviaOrdine(); }
 }
 
 /* ---------- Eventi ---------- */
 function collegaEventi() {
   document.addEventListener('click', e => {
-    /* chiudi il menu mobile dopo il tap su un link di navigazione */
     if (e.target.closest('.nav-menu a')) chiudiMenu();
 
     const btnAzione = e.target.closest('button[data-azione]');
     if (btnAzione && !btnAzione.disabled) { gestisciAzione(btnAzione); return; }
-
-    /* filtri categoria: chip del catalogo e tessere (.tile) della sezione categorie */
-    const elFiltro = e.target.closest('[data-filtro],[data-cat]');
-    if (elFiltro) {
-      if (elFiltro.tagName === 'A') e.preventDefault();
-      applicaFiltro(elFiltro.dataset.filtro || elFiltro.dataset.cat || 'tutti');
-      if (!elFiltro.closest('#chips')) {
-        const sezione = $('#catalogo');
-        if (sezione) sezione.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      return;
-    }
-
-    const btnTab = e.target.closest('button[data-tab]');
-    if (btnTab) attivaTab(btnTab.dataset.tab);
+    const chip = e.target.closest('#chips .chip');
+    if (chip) { filtroAttivo = chip.dataset.filtro || 'tutti'; renderChips(); renderCatalogo(); }
   });
 
-  const su = (selettore, evento, fn) => {
-    const el = $(selettore);
-    if (el) el.addEventListener(evento, fn);
-  };
-
-  /* hamburger: prova prima l'id, poi la classe (guard clause su null) */
-  const btnMenu = selBtnMenu();
-  if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
-
+  const su = (selettore, evento, fn) => { const el = $(selettore); if (el) el.addEventListener(evento, fn); };
+  su('#menuBtn', 'click', toggleMenu);
   su('#cartBtn', 'click', apriCarrello);
   su('#cartClose', 'click', chiudiTutto);
   su('#modalClose', 'click', chiudiTutto);
-  su('#adminClose', 'click', chiudiTutto);
-  su('#adminOpen', 'click', () => { mostraAdmin(); apriModale('#adminModal'); });
   su('#scrim', 'click', chiudiTutto);
-  su('#prodForm', 'submit', salvaProdotto);
-  su('#setForm', 'submit', salvaDati);
-  su('#prodReset', 'click', resetFormProdotto);
-  su('#gateForm', 'submit', e => {
-    e.preventDefault();
-    const campo = $('#gatePass');
-    const msg = $('#gateMsg');
-    if (!campo) return;
-    if (campo.value.trim() !== PASSWORD_ADMIN) {
-      campo.value = '';
-      if (msg) msg.hidden = false;
-      toast('Password non corretta.');
-      return;
-    }
-    if (msg) msg.hidden = true;
-    campo.value = '';
-    scriviJSON(CHIAVI.admin, true);
-    mostraAdmin();
-    toast('Benvenuto nell’area amministrazione di Interno 63.');
-  });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') chiudiTutto(); });
+
+  /* Solo pagina shop: ricerca e ordinamento */
+  su('#cerca', 'input', e => { testoRicerca = e.target.value; renderCatalogo(); });
+  su('#ordina', 'change', e => { ordinamento = e.target.value; renderCatalogo(); });
 }
 
 /* ---------- Avvio ---------- */
@@ -587,6 +375,12 @@ function init() {
   ordini = leggiJSON(CHIAVI.ordini, []);
   const n = leggiJSON(CHIAVI.negozio, {});
   negozio = (n && typeof n === 'object') ? { ...NEGOZIO_INIZIALE, ...n } : { ...NEGOZIO_INIZIALE };
+
+  /* Categoria in arrivo dall'URL (es. shop.html?cat=bomboniere dai link dell'home) */
+  try {
+    const cat = new URLSearchParams(window.location.search).get('cat');
+    filtroAttivo = CATEGORIE[cat] ? cat : 'tutti';
+  } catch (e) { filtroAttivo = 'tutti'; }
 
   const anno = $('#anno');
   if (anno) anno.textContent = String(new Date().getFullYear());

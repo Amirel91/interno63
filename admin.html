@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Area amministratore — Interno 63</title>
+<meta name="description" content="Pannello di gestione Interno 63: catalogo, vetrina, richieste d'ordine e dati del negozio.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1d4a35">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="pag-admin">
+
+<!-- HEADER ADMIN -->
+<header class="admin-head">
+  <a class="brand" href="index.html"><span class="dot"></span> Interno <b>63</b> <span class="admin-tag">Admin</span></a>
+  <div class="admin-head-actions">
+    <a class="btn btn-ghost" href="index.html">← Torna al negozio</a>
+    <button class="btn" type="button" id="adminLogout" hidden>Esci</button>
+  </div>
+</header>
+
+<!-- ACCESSO -->
+<section class="gate-wrap" id="gateWrap" aria-label="Accesso amministratore">
+  <span class="gate-ico" aria-hidden="true">🔐</span>
+  <h1>Area amministratore</h1>
+  <p class="hint">Gestisci catalogo, vetrina, richieste d'ordine e dati del negozio Interno 63.</p>
+  <form class="gate" id="gateForm">
+    <label for="gatePass">Password amministratore</label>
+    <input type="password" id="gatePass" autocomplete="off" placeholder="Password demo: interno63" required>
+    <button class="btn" type="submit">Entra</button>
+    <p class="gate-msg" id="gateMsg" hidden>Password errata.</p>
+  </form>
+</section>
+
+<!-- DASHBOARD -->
+<main class="admin-shell" id="adminShell" hidden>
+  <div class="admin-stats" aria-label="Statistiche negozio">
+    <div class="admin-stat"><b id="statProd">8</b><span>Articoli in catalogo</span></div>
+    <div class="admin-stat"><b id="statVet">3</b><span>In vetrina</span></div>
+    <div class="admin-stat"><b id="statOrd">3</b><span>Richieste ricevute</span></div>
+    <div class="admin-stat"><b id="statTot">€ 192.90</b><span>Valore richieste</span></div>
+  </div>
+
+  <div class="tabs" id="adminTabs" role="tablist">
+    <button class="tab attiva" data-tab="prod" type="button" aria-selected="true">Prodotti</button>
+    <button class="tab" data-tab="ord" type="button" aria-selected="false">Ordini</button>
+    <button class="tab" data-tab="set" type="button" aria-selected="false">Dati negozio</button>
+  </div>
+
+  <!-- TAB PRODOTTI -->
+  <div id="tab-prod" class="tabpane">
+    <form class="form-grid" id="prodForm">
+      <input type="hidden" id="fId">
+      <label>Nome<input id="fName" required maxlength="60" placeholder="Es. Barattolo miele personalizzato"></label>
+      <label>Categoria
+        <select id="fCat">
+          <option value="bomboniere">Bomboniere</option>
+          <option value="cofanetti">Cofanetti</option>
+          <option value="regalo">Articoli regalo</option>
+          <option value="matrimonio">Servizi matrimonio</option>
+        </select>
+      </label>
+      <label>Prezzo €<input id="fPrice" type="number" min="0" step="0.10" required placeholder="0.00"></label>
+      <label>URL foto <span class="hint">(opzionale)</span><input id="fImg" type="url" placeholder="https://..."></label>
+      <label class="wide">Descrizione<input id="fDesc" maxlength="220" placeholder="Descrizione breve per la scheda prodotto"></label>
+      <label class="check"><input type="checkbox" id="fFeat"> In vetrina</label>
+      <div class="cta-row wide">
+        <button class="btn" type="submit" id="prodSave">Salva prodotto</button>
+        <button class="btn btn-ghost" type="button" id="prodReset">Pulisci modulo</button>
+      </div>
+    </form>
+    <div class="table-wrap" id="adminTable"></div>
+  </div>
+
+  <!-- TAB ORDINI -->
+  <div id="tab-ord" class="tabpane" hidden></div>
+
+  <!-- TAB DATI NEGOZIO -->
+  <div id="tab-set" class="tabpane" hidden>
+    <form class="form-grid" id="setForm">
+      <label>Nome negozio<input id="sName" required maxlength="40"></label>
+      <label>Telefono<input id="sPhone" required maxlength="30"></label>
+      <label class="check wide"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche)</label>
+      <div class="cta-row wide"><button class="btn" type="submit">Salva dati</button></div>
+    </form>
+  </div>
+</main>
+
+<footer class="foot">
+  <p>© <span id="anno">2025</span> <b>Interno 63</b> · Pannello di gestione interna · Monopoli (BA)</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="admin.js"></script>
+</body>
+</html>

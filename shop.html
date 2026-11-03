@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catalogo — Interno 63</title>
+<meta name="description" content="Il catalogo completo di Interno 63: bomboniere artigianali, cofanetti regalo, articoli regalo e servizi matrimonio. Filtra, cerca e ordina in pochi tocchi.">
+<meta name="theme-color" content="#1d4a35">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="shop">
+<div class="topbar">Spedizione tracciata in tutta Italia · Personalizzazione con nomi e data inclusa</div>
+
+<!-- HEADER + NAV -->
+<header class="nav">
+  <a class="brand" href="index.html"><span class="dot"></span> Interno <b>63</b></a>
+  <div class="nav-actions">
+    <button class="cart-btn" id="cartBtn" type="button" aria-label="Apri carrello">🛍️ <span class="badge" id="cartCount"></span></button>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Apri menu di navigazione" aria-expanded="false" aria-controls="navMenu"><span></span><span></span></button>
+  </div>
+  <nav class="nav-menu" id="navMenu" aria-label="Navigazione principale">
+    <a href="index.html">Home</a>
+    <a href="shop.html" aria-current="page">Catalogo</a>
+    <a href="shop.html?cat=matrimonio">Matrimoni</a>
+    <a href="index.html#contatti">Contatti</a>
+  </nav>
+</header>
+
+<!-- INTESTAZIONE CATALOGO -->
+<section class="page-head">
+  <div class="wrap">
+    <p class="breadcrumb"><a href="index.html">Home</a> <span aria-hidden="true">/</span> Catalogo</p>
+    <h1>Tutti gli articoli</h1>
+    <p class="lead">Filtra per categoria, cerca un articolo o ordina come preferisci: il catalogo si aggiorna da solo.</p>
+  </div>
+</section>
+
+<!-- TOOLBAR -->
+<section class="toolbar-wrap" aria-label="Strumenti del catalogo">
+  <div class="wrap toolbar">
+    <div class="campo-cerca">
+      <span aria-hidden="true">🔎</span>
+      <input type="search" id="cerca" placeholder="Cerca nel catalogo: miele, candela, cofanetto…" aria-label="Cerca nel catalogo">
+    </div>
+    <label class="campo-ordina">Ordina per
+      <select id="ordina">
+        <option value="popolari">Più popolari</option>
+        <option value="prezzo-asc">Prezzo crescente</option>
+        <option value="prezzo-desc">Prezzo decrescente</option>
+        <option value="nome">Nome A–Z</option>
+      </select>
+    </label>
+  </div>
+  <div class="wrap">
+    <div class="chips" id="chips" role="tablist" aria-label="Filtri categoria"></div>
+    <p class="conteggio" id="conteggio" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- GRIGLIA PRODOTTI -->
+<main class="section shop-main">
+  <div class="wrap">
+    <div class="grid grid-shop" id="productGrid"></div>
+    <p class="empty" id="emptyMsg" hidden>Nessun articolo trovato: prova a cambiare filtro o ricerca.</p>
+    <div class="cta-center">
+      <a class="btn btn-ghost" href="index.html#contatti">Non trovi quello che cerchi? Scrivici →</a>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="foot" id="contatti">
+  <p class="foot-contatti">
+    Via Roma 63, 70043 Monopoli (BA) ·
+    <a class="foot-tel" href="tel:+393512345678">351 234 5678</a> ·
+    <a class="foot-tel" href="mailto:info@interno63.it">info@interno63.it</a>
+  </p>
+  <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Catalogo articoli · Monopoli (BA)</p>
+  <nav class="foot-links" aria-label="Link utili">
+    <a class="link" href="index.html">Torna alla home</a>
+    <a class="link" href="admin.html">Area amministratore</a>
+  </nav>
+</footer>
+
+<!-- Carrello (condiviso con la home) -->
+<aside class="drawer" id="cartDrawer" aria-label="Carrello" aria-hidden="true">
+  <div class="drawer-head">
+    <h2>Il tuo carrello</h2>
+    <button class="link" id="cartClose" type="button" aria-label="Chiudi carrello">✕ Chiudi</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot" id="cartFoot"></div>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="modal" id="productModal" role="dialog" aria-modal="true" aria-label="Dettaglio prodotto" hidden>
+  <div class="modal-card" id="modalBody"></div>
+  <button class="modal-x" id="modalClose" type="button" aria-label="Chiudi dettaglio">✕</button>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>
