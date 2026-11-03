@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Area amministratore — Interno 63</title>
-<meta name="description" content="Pannello di gestione Interno 63: articoli, categorie, vetrina, richieste d'ordine e dati del negozio.">
+<meta name="description" content="Pannello di gestione Interno 63: articoli, categorie, vetrina, richieste d'ordine, dati del negozio e backup.">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#1d4a35">
 <link rel="stylesheet" href="style.css">
@@ -24,7 +24,7 @@
 <section class="gate-wrap" id="gateWrap" aria-label="Accesso amministratore">
   <span class="gate-ico" aria-hidden="true">🔐</span>
   <h1>Area amministratore</h1>
-  <p class="hint">Gestisci articoli, categorie, vetrina, richieste d'ordine e dati del negozio Interno 63.</p>
+  <p class="hint">Gestisci articoli, categorie, vetrina, richieste d'ordine, dati del negozio e backup.</p>
   <form class="gate" id="gateForm">
     <label for="gatePass">Password amministratore</label>
     <input type="password" id="gatePass" autocomplete="off" placeholder="Password demo: interno63" required>
@@ -39,15 +39,17 @@
     <div class="admin-stat"><b id="statProd">8</b><span>Articoli in catalogo</span></div>
     <div class="admin-stat"><b id="statCat">4</b><span>Categorie</span></div>
     <div class="admin-stat"><b id="statVet">3</b><span>In vetrina</span></div>
-    <div class="admin-stat"><b id="statOrd">3</b><span>Richieste</span></div>
+    <div class="admin-stat"><b id="statOrd">3</b><span>Richieste totali</span></div>
+    <div class="admin-stat"><b id="statAperte">2</b><span>Da evadere</span></div>
     <div class="admin-stat"><b id="statTot">€ 192.90</b><span>Valore richieste</span></div>
   </div>
 
   <div class="tabs" id="adminTabs" role="tablist" aria-label="Sezioni del pannello">
-    <button class="tab attiva" data-tab="prod" type="button" role="tab" aria-selected="true">📦 Articoli</button>
-    <button class="tab" data-tab="cat" type="button" role="tab" aria-selected="false">🏷️ Categorie</button>
-    <button class="tab" data-tab="ord" type="button" role="tab" aria-selected="false">🧾 Ordini</button>
+    <button class="tab attiva" data-tab="prod" type="button" role="tab" aria-selected="true">📦 Articoli <span class="cont-badge" id="badgeProd">0</span></button>
+    <button class="tab" data-tab="cat" type="button" role="tab" aria-selected="false">🏷️ Categorie <span class="cont-badge" id="badgeCat">0</span></button>
+    <button class="tab" data-tab="ord" type="button" role="tab" aria-selected="false">🧾 Ordini <span class="cont-badge" id="badgeOrd" hidden>0</span></button>
     <button class="tab" data-tab="set" type="button" role="tab" aria-selected="false">⚙️ Dati negozio</button>
+    <button class="tab" data-tab="bak" type="button" role="tab" aria-selected="false">💾 Backup</button>
   </div>
 
   <!-- TAB ARTICOLI -->
@@ -73,6 +75,9 @@
           <label>URL foto <span class="hint">(opzionale)</span>
             <input id="fImg" type="url" placeholder="https://…">
           </label>
+          <label>oppure carica una foto <span class="hint">(dal dispositivo, max ~1 MB)</span>
+            <input id="fImgFile" type="file" accept="image/*">
+          </label>
           <label class="wide">Descrizione <span class="hint" id="fDescCount">0/220</span>
             <input id="fDesc" maxlength="220" placeholder="Descrizione breve per la scheda prodotto">
           </label>
@@ -88,6 +93,17 @@
           <p class="hint">Ecco come l'articolo apparirà nel negozio, aggiornato mentre compili.</p>
         </aside>
       </div>
+    </div>
+
+    <div class="filtri-bar" aria-label="Filtri tabella articoli">
+      <div class="campo-cerca cerca-mini">
+        <span aria-hidden="true">🔎</span>
+        <input type="search" id="cercaProd" placeholder="Cerca articolo per nome o descrizione…">
+      </div>
+      <label class="campo-ordina">Categoria
+        <select id="filtraCat"><option value="tutti">Tutte le categorie</option></select>
+      </label>
+      <p class="conteggio" id="contProd" aria-live="polite"></p>
     </div>
     <div class="table-wrap" id="adminTable"></div>
   </div>
@@ -118,7 +134,18 @@
   </div>
 
   <!-- TAB ORDINI -->
-  <div id="tab-ord" class="tabpane" role="tabpanel" hidden></div>
+  <div id="tab-ord" class="tabpane" role="tabpanel" hidden>
+    <div class="filtri-bar" aria-label="Filtri richieste d'ordine">
+      <div class="chips" id="ordFiltri" role="group" aria-label="Stato richieste">
+        <button class="chip attiva" type="button" data-filtro="tutte">Tutte</button>
+        <button class="chip" type="button" data-filtro="aperte">Da evadere</button>
+        <button class="chip" type="button" data-filtro="chiuse">Evasse</button>
+      </div>
+      <p class="conteggio" id="contOrd" aria-live="polite"></p>
+      <button class="btn-mini" type="button" id="esportaCSV">⬇ Esporta CSV</button>
+    </div>
+    <div id="ordiniBox"></div>
+  </div>
 
   <!-- TAB DATI NEGOZIO -->
   <div id="tab-set" class="tabpane" role="tabpanel" hidden>
@@ -161,10 +188,46 @@
       </form>
     </div>
   </div>
+
+  <!-- TAB BACKUP -->
+  <div id="tab-bak" class="tabpane" role="tabpanel" hidden>
+    <div class="backup-grid">
+      <div class="edit-card">
+        <h2>⬇ Esporta backup</h2>
+        <p class="hint">Scarica un file JSON con catalogo, categorie, richieste d'ordine e dati del negozio. Conservalo: permette di trasferire tutto su un altro browser.</p>
+        <div class="backup-azioni"><button class="btn" type="button" id="btnEsporta">Scarica backup completo</button></div>
+      </div>
+      <div class="edit-card">
+        <h2>⬆ Importa backup</h2>
+        <p class="hint">Scegli un file esportato in precedenza: sostituirà integralmente i dati di questo browser.</p>
+        <input type="file" id="fileImporta" accept="application/json,.json">
+        <div class="backup-azioni"><button class="btn" type="button" id="btnImporta" disabled>Importa e sostituisci</button></div>
+      </div>
+      <div class="edit-card">
+        <h2>↺ Ripristini rapidi</h2>
+        <p class="hint">Tornano i dati di partenza del negozio demo. Ogni modifica corrispondente andrà persa.</p>
+        <div class="backup-azioni">
+          <button class="btn-mini" type="button" data-ripristina="catalogo">Catalogo iniziale</button>
+          <button class="btn-mini" type="button" data-ripristina="categorie">Categorie predefinite</button>
+          <button class="btn-mini pericolo" type="button" data-ripristina="ordini">Svuota richieste</button>
+          <button class="btn-mini pericolo" type="button" data-ripristina="tutto">Ripristina tutto</button>
+        </div>
+      </div>
+      <div class="edit-card">
+        <h2>🔑 Password del pannello</h2>
+        <p class="hint">Cambia la password di accesso (minimo 4 caratteri). Quella demo è «interno63».</p>
+        <label>Nuova password
+          <input type="password" id="sPass" maxlength="40" autocomplete="new-password" placeholder="Scegli una password">
+        </label>
+        <div class="backup-azioni"><button class="btn" type="button" id="btnPass">Aggiorna password</button></div>
+      </div>
+    </div>
+    <p class="hint box-info">Tutti i dati vivono solo nel <b>localStorage di questo browser</b>: non ci sono server né account. Per passare a un altro computer usa Esporta/Importa, per non perdere nulla in caso di pulizia della cronologia tieni sempre un backup recente.</p>
+  </div>
 </main>
 
 <footer class="foot">
-  <p>© <span id="anno">2025</span> <b>Interno 63</b> · Pannello di gestione interna · Monopoli (BA)</p>
+  <p>© <span id="anno">2025</span> <b>Interno 63</b> · Pannello di gestione interna · <span id="footCitta">Monopoli (BA)</span></p>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
