@@ -20,8 +20,14 @@
   </div>
   <nav class="nav-menu" id="navMenu" aria-label="Navigazione principale">
     <a href="index.html" aria-current="page">Home</a>
-    <a href="shop.html">Catalogo</a>
-    <a href="shop.html?cat=matrimonio">Matrimoni</a>
+    <div class="nav-drop" id="navDrop">
+      <button class="nav-drop-btn" type="button" id="navDropBtn" aria-expanded="false" aria-haspopup="true" aria-controls="navDropMenu">
+        Catalogo <span class="nav-drop-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="nav-drop-menu" id="navDropMenu">
+        <div class="nav-drop-inner" id="dropCategorie"></div>
+      </div>
+    </div>
     <a href="#contatti">Contatti</a>
   </nav>
 </header>
@@ -69,19 +75,14 @@
     </div>
   </section>
 
-  <!-- RICHIAMO CATEGORIE -->
+  <!-- RICHIAMO CATEGORIE: generate dai dati dell'admin -->
   <section class="section cats" id="categorie">
     <div class="section-head reveal">
       <span class="pill">Catalogo</span>
       <h2>Compra per categoria</h2>
-      <p>Ogni categoria porta al catalogo completo, già filtrato: scegli, aggiungi al carrello, noi pensiamo al resto.</p>
+      <p>Scegli la categoria che ti interessa: il catalogo si apre già filtrato, tu pensi solo al regalo.</p>
     </div>
-    <div class="cats-grid reveal" role="group" aria-label="Categorie del catalogo">
-      <a class="tile" href="shop.html?cat=bomboniere"><span class="tile-ico" aria-hidden="true">🎀</span><span class="tile-nome">Bomboniere</span><span class="tile-quota" data-cat="bomboniere"></span><span class="tile-vai" aria-hidden="true">Sfoglia →</span></a>
-      <a class="tile" href="shop.html?cat=cofanetti"><span class="tile-ico" aria-hidden="true">📦</span><span class="tile-nome">Cofanetti</span><span class="tile-quota" data-cat="cofanetti"></span><span class="tile-vai" aria-hidden="true">Sfoglia →</span></a>
-      <a class="tile" href="shop.html?cat=regalo"><span class="tile-ico" aria-hidden="true">🎁</span><span class="tile-nome">Articoli regalo</span><span class="tile-quota" data-cat="regalo"></span><span class="tile-vai" aria-hidden="true">Sfoglia →</span></a>
-      <a class="tile" href="shop.html?cat=matrimonio"><span class="tile-ico" aria-hidden="true">💍</span><span class="tile-nome">Servizi matrimonio</span><span class="tile-quota" data-cat="matrimonio"></span><span class="tile-vai" aria-hidden="true">Sfoglia →</span></a>
-    </div>
+    <div class="cats-grid reveal" id="catsGrid" role="group" aria-label="Categorie del catalogo"></div>
   </section>
 </main>
 
@@ -95,7 +96,6 @@
   <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Bomboniere, articoli regalo e servizi matrimonio · Monopoli (BA)</p>
   <nav class="foot-links" aria-label="Link utili">
     <a class="link" href="shop.html">Catalogo</a>
-    <a class="link" href="shop.html?cat=matrimonio">Servizi matrimonio</a>
     <a class="link" href="admin.html">Area amministratore</a>
   </nav>
 </footer>

@@ -1,4 +1,5 @@
-/* Interno 63 — storefront condiviso: index.html (vetrina) + shop.html (catalogo con ricerca, filtri e ordinamento). L'admin vive in admin.html + admin.js. */
+/* Interno 63 — storefront condiviso: index.html (vetrina + richiamo categorie) + shop.html (catalogo).
+   Categorie, catalogo e dati negozio arrivano dall'admin attraverso il localStorage condiviso. */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -12,21 +13,30 @@ const CATALOGO_INIZIALE = [
   { id: 8, nome: 'Portagioie in Vimini', prezzo: 24.0, categoria: 'regalo', vetrina: false, descrizione: 'Cestino intrecciato a mano con interno in tessuto, perfetto per la camera.', img: '' }
 ];
 
-const CATEGORIE = {
-  tutti: 'Tutti gli articoli',
-  bomboniere: 'Bomboniere',
-  cofanetti: 'Cofanetti',
-  regalo: 'Articoli regalo',
-  matrimonio: 'Servizi matrimonio'
+const CATEGORIE_INIZIALI = [
+  { id: 'bomboniere', nome: 'Bomboniere', icona: '🎀' },
+  { id: 'cofanetti', nome: 'Cofanetti', icona: '📦' },
+  { id: 'regalo', nome: 'Articoli regalo', icona: '🎁' },
+  { id: 'matrimonio', nome: 'Servizi matrimonio', icona: '💍' }
+];
+
+const NEGOZIO_INIZIALE = {
+  nome: 'Interno 63',
+  telefono: '351 234 5678',
+  email: 'info@interno63.it',
+  via: 'Via Roma 63',
+  cap: '70043',
+  citta: 'Monopoli',
+  prov: 'BA',
+  orari: ''
 };
-const ICONE = { bomboniere: '🎀', cofanetti: '📦', regalo: '🎁', matrimonio: '💍' };
-const NEGOZIO_INIZIALE = { nome: 'Interno 63', telefono: '351 234 5678' };
 
 /* Chiavi condivise con admin.js: le modifiche fatte in admin.html si riflettono qui */
-const CHIAVI = { catalogo: 'i63-catalogo', carrello: 'i63-carrello', ordini: 'i63-ordini', admin: 'i63-admin', negozio: 'i63-negozio' };
+const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', carrello: 'i63-carrello', ordini: 'i63-ordini', admin: 'i63-admin', negozio: 'i63-negozio' };
 
 /* ---------- Stato ---------- */
 let catalogo = [];
+let categorie = [];
 let carrello = [];
 let ordini = [];
 let negozio = { ...NEGOZIO_INIZIALE };
@@ -37,6 +47,9 @@ let ordinamento = 'default';
 /* ---------- Utility ---------- */
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const euro = n => `€ ${(Number(n) || 0).toFixed(2)}`;
+const nomeCat = id => { const c = categorie.find(x => x.id === id); return c ? c.nome : ''; };
+const iconaCat = id => { const c = categorie.find(x => x.id === id); return c ? (c.icona || '✿') : '✿'; };
 
 function leggiJSON(chiave, predefinito) {
   try {
@@ -56,8 +69,6 @@ function scriviJSON(chiave, valore) {
   catch (e) { console.warn('Impossibile salvare i dati locali:', e); }
 }
 
-const euro = n => `€ ${(Number(n) || 0).toFixed(2)}`;
-
 let toastTimer = null;
 function toast(messaggio) {
   const el = $('#toast');
@@ -68,9 +79,28 @@ function toast(messaggio) {
   toastTimer = setTimeout(() => el.classList.remove('visibile'), 2600);
 }
 
-/* ---------- Menu mobile (hamburger) ---------- */
+/* ---------- Menu mobile (hamburger) + drop-down categorie ---------- */
 const selMenu = () => $('#navMenu') || document.querySelector('.nav-menu');
 const selBtnMenu = () => $('#menuBtn') || document.querySelector('.menu-btn');
+/* il pulsante che apre il drop-down può avere id/classi diversi: cerco tutti gli alias */
+const selBtnDrop = () => document.querySelector('#dropBtn, #dropToggle, .drop-btn, .drop-toggle, [data-toggle-drop]');
+
+function chiudiDrop() {
+  const drop = $('#dropCategorie');
+  const btn = selBtnDrop();
+  if (!btn) return; /* nessun pulsante: elenco sempre visibile, niente da chiudere */
+  if (drop) drop.hidden = true;
+  btn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleDrop() {
+  const drop = $('#dropCategorie');
+  const btn = selBtnDrop();
+  if (!drop || !btn) return;
+  const aperto = drop.hidden;
+  drop.hidden = !aperto;
+  btn.setAttribute('aria-expanded', String(aperto));
+}
 
 function chiudiMenu() {
   const menu = selMenu();
@@ -80,6 +110,7 @@ function chiudiMenu() {
     btn.classList.remove('attiva');
     btn.setAttribute('aria-expanded', 'false');
   }
+  chiudiDrop();
 }
 
 function toggleMenu() {
@@ -91,6 +122,7 @@ function toggleMenu() {
   menu.classList.toggle('attiva', aperto);
   btn.classList.toggle('attiva', aperto);
   btn.setAttribute('aria-expanded', String(aperto));
+  if (!aperto) chiudiDrop();
 }
 
 /* A desktop (>768px) il menu è sempre visibile: azzero lo stato al cambio viewport */
@@ -120,16 +152,16 @@ function osservaAnimazioni() {
   elementi.forEach(el => osservatore.observe(el));
 }
 
-/* ---------- Rendering: card, filtri, catalogo, vetrina ---------- */
+/* ---------- Rendering: card, filtri, catalogo, vetrina, categorie ---------- */
 function schedaProdotto(p) {
   const media = p.img && String(p.img).trim()
     ? `<img src="${esc(p.img)}" alt="${esc(p.nome)}" loading="lazy">`
-    : `<div class="segnaposto" aria-hidden="true">${ICONE[p.categoria] || '✿'}</div>`;
+    : `<div class="segnaposto" aria-hidden="true">${iconaCat(p.categoria)}</div>`;
   return `<article class="product">
     <button class="product-media" type="button" data-azione="dettaglio" data-id="${p.id}" aria-label="Dettagli: ${esc(p.nome)}">
       ${media}${p.vetrina ? '<span class="badge-vetrina">In vetrina</span>' : ''}
     </button>
-    <span class="categoria">${CATEGORIE[p.categoria] || ''}</span>
+    <span class="categoria">${esc(nomeCat(p.categoria))}</span>
     <h3>${esc(p.nome)}</h3>
     <p class="prezzo">${euro(p.prezzo)}</p>
     <button type="button" data-azione="aggiungi" data-id="${p.id}">Aggiungi al carrello</button>
@@ -138,10 +170,39 @@ function schedaProdotto(p) {
 
 function renderChips() {
   const box = $('#chips');
+  if (!box) return; /* solo shop.html ha i filtri */
+  const voci = [{ id: 'tutti', nome: 'Tutti gli articoli' }, ...categorie];
+  box.innerHTML = voci.map(c => {
+    const attiva = filtroAttivo === c.id;
+    return `<button class="chip${attiva ? ' attiva' : ''}" type="button" role="tab" aria-selected="${attiva}" data-filtro="${esc(c.id)}">${esc(c.nome)}</button>`;
+  }).join('');
+}
+
+/* Drop-down categorie dentro il menu in alto a destra: voci dinamiche dall'admin */
+function renderDropCategorie() {
+  const box = $('#dropCategorie');
   if (!box) return;
-  box.innerHTML = Object.entries(CATEGORIE).map(([k, etichetta]) => {
-    const attiva = filtroAttivo === k;
-    return `<button class="chip${attiva ? ' attiva' : ''}" type="button" role="tab" aria-selected="${attiva}" data-filtro="${k}">${etichetta}</button>`;
+  const voci = categorie
+    .filter(c => c && c.id)
+    .map(c => `<a href="shop.html?cat=${encodeURIComponent(c.id)}"><span class="drop-ico" aria-hidden="true">${esc(c.icona || '✿')}</span>${esc(c.nome || 'Categoria')}</a>`)
+    .join('');
+  box.innerHTML = `<a href="shop.html">Tutti gli articoli</a>${voci}`;
+  /* se esiste il pulsante di apertura, il drop-down parte chiuso */
+  if (selBtnDrop()) box.hidden = true;
+}
+
+/* Tile "Compra per categoria" della homepage: dinamiche, con conteggio articoli */
+function renderTileCategorie() {
+  const box = $('#catsGrid');
+  if (!box) return; /* shop.html non ha le tile */
+  box.innerHTML = categorie.map(c => {
+    const n = catalogo.filter(p => p.categoria === c.id).length;
+    return `<a class="tile" href="shop.html?cat=${encodeURIComponent(c.id)}">
+      <span class="tile-ico" aria-hidden="true">${esc(c.icona || '✿')}</span>
+      <span class="tile-nome">${esc(c.nome || 'Categoria')}</span>
+      <span class="tile-quota">${n} ${n === 1 ? 'articolo' : 'articoli'}</span>
+      <span class="tile-vai" aria-hidden="true">Sfoglia →</span>
+    </a>`;
   }).join('');
 }
 
@@ -161,11 +222,15 @@ function renderCatalogo() {
   if (!griglia) return; /* index.html non ha la griglia catalogo: vive in shop.html */
   const q = testoRicerca.trim().toLowerCase();
   let lista = filtroAttivo === 'tutti' ? catalogo.slice() : catalogo.filter(p => p.categoria === filtroAttivo);
-  if (q) lista = lista.filter(p => `${p.nome} ${p.descrizione} ${CATEGORIE[p.categoria] || ''}`.toLowerCase().includes(q));
+  if (q) lista = lista.filter(p => `${p.nome} ${p.descrizione || ''} ${nomeCat(p.categoria)}`.toLowerCase().includes(q));
   lista = ordinaLista(lista);
   griglia.innerHTML = lista.map(schedaProdotto).join('');
   const vuoto = $('#emptyMsg');
   if (vuoto) vuoto.hidden = lista.length > 0;
+  const conteggio = $('#conteggio');
+  if (conteggio) conteggio.textContent = lista.length
+    ? `${lista.length} ${lista.length === 1 ? 'articolo disponibile' : 'articoli disponibili'}`
+    : '';
 }
 
 function renderVetrina() {
@@ -236,10 +301,10 @@ function apriDettaglio(id) {
   if (!p || !corpo) return;
   const media = p.img && String(p.img).trim()
     ? `<img src="${esc(p.img)}" alt="${esc(p.nome)}">`
-    : `<div class="segnaposto" aria-hidden="true">${ICONE[p.categoria] || '✿'}</div>`;
+    : `<div class="segnaposto" aria-hidden="true">${iconaCat(p.categoria)}</div>`;
   corpo.innerHTML = `<div class="dettaglio-media">${media}</div>
     <div class="dettaglio-info">
-      <span class="categoria">${CATEGORIE[p.categoria] || ''}</span>
+      <span class="categoria">${esc(nomeCat(p.categoria))}</span>
       <h3>${esc(p.nome)}</h3>
       <p class="desc">${esc(p.descrizione) || 'Articolo selezionato a mano in negozio: contattaci per la personalizzazione.'}</p>
       <p class="prezzo">${euro(p.prezzo)}</p>
@@ -314,7 +379,8 @@ function inviaOrdine() {
     cliente: nome,
     recapito,
     articoli: carrello.map(r => `${r.nome} x${r.qta}`).join(', '),
-    totale: totaleCarrello()
+    totale: totaleCarrello(),
+    evaso: false
   });
   scriviJSON(CHIAVI.ordini, ordini);
   carrello = [];
@@ -324,12 +390,30 @@ function inviaOrdine() {
   toast(`Grazie ${nome}! Richiesta inviata: ti ricontattiamo per conferma e consegna.`);
 }
 
-/* ---------- Dati negozio (modificabili dall'admin) ---------- */
+/* ---------- Dati negozio (nome, sede e contatti modificabili dall'admin) ---------- */
+function datiNegozioComposti() {
+  const n = { ...NEGOZIO_INIZIALE, ...(negozio && typeof negozio === 'object' ? negozio : {}) };
+  const comune = [n.cap, n.citta, n.prov ? `(${n.prov})` : ''].filter(Boolean).join(' ');
+  const sede = [n.via, comune].filter(Boolean).join(', ');
+  return { ...n, sede };
+}
+
 function applicaDatiNegozio() {
-  const piede = $('#footName');
-  if (piede) piede.textContent = negozio.nome || NEGOZIO_INIZIALE.nome;
-  const tel = $('#cPhone');
-  if (tel) tel.textContent = negozio.telefono || NEGOZIO_INIZIALE.telefono;
+  const d = datiNegozioComposti();
+  const imposta = (sel, valore) => {
+    const el = $(sel);
+    if (el && valore) el.textContent = valore;
+  };
+  imposta('#footName', d.nome);
+  imposta('#cAddress', d.sede);
+  imposta('#cPhone', d.telefono);
+  imposta('#cEmail', d.email);
+  imposta('#cOrari', d.orari);
+  imposta('#footCitta', d.citta);
+  const tel = document.querySelector('a[href^="tel:"]');
+  if (tel && d.telefono) tel.href = 'tel:+39' + String(d.telefono).replace(/\D/g, '');
+  const mail = document.querySelector('a[href^="mailto:"]');
+  if (mail && d.email) mail.href = 'mailto:' + d.email;
 }
 
 /* ---------- Azioni delegate (solo storefront) ---------- */
@@ -346,6 +430,10 @@ function gestisciAzione(btn) {
 /* ---------- Eventi ---------- */
 function collegaEventi() {
   document.addEventListener('click', e => {
+    /* apertura/rottura del drop-down categorie nel menu in alto */
+    const btnDrop = e.target.closest('#dropBtn, #dropToggle, .drop-btn, .drop-toggle, [data-toggle-drop]');
+    if (btnDrop) { toggleDrop(); return; }
+
     if (e.target.closest('.nav-menu a')) chiudiMenu();
 
     const btnAzione = e.target.closest('button[data-azione]');
@@ -371,15 +459,26 @@ function collegaEventi() {
 function init() {
   const salvato = leggiJSON(CHIAVI.catalogo, []);
   catalogo = Array.isArray(salvato) && salvato.length ? salvato : CATALOGO_INIZIALE.map(p => ({ ...p }));
+
+  /* Categorie: rispetto anche un elenco salvato vuoto (scelta esplicita dell'admin) */
+  let catSalvate = null;
+  try {
+    const grezzo = localStorage.getItem(CHIAVI.categorie);
+    if (grezzo) catSalvate = JSON.parse(grezzo);
+  } catch (e) { catSalvate = null; }
+  categorie = Array.isArray(catSalvate)
+    ? catSalvate.filter(c => c && c.id)
+    : CATEGORIE_INIZIALI.map(c => ({ ...c }));
+
   carrello = leggiJSON(CHIAVI.carrello, []);
   ordini = leggiJSON(CHIAVI.ordini, []);
   const n = leggiJSON(CHIAVI.negozio, {});
   negozio = (n && typeof n === 'object') ? { ...NEGOZIO_INIZIALE, ...n } : { ...NEGOZIO_INIZIALE };
 
-  /* Categoria in arrivo dall'URL (es. shop.html?cat=bomboniere dai link dell'home) */
+  /* Categoria in arrivo dall'URL (es. shop.html?cat=bomboniere) */
   try {
     const cat = new URLSearchParams(window.location.search).get('cat');
-    filtroAttivo = CATEGORIE[cat] ? cat : 'tutti';
+    filtroAttivo = cat && categorie.some(c => c.id === cat) ? cat : 'tutti';
   } catch (e) { filtroAttivo = 'tutti'; }
 
   const anno = $('#anno');
@@ -387,6 +486,8 @@ function init() {
   applicaDatiNegozio();
 
   renderChips();
+  renderDropCategorie();
+  renderTileCategorie();
   renderCatalogo();
   renderVetrina();
   renderCarrello();
