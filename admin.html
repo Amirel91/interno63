@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Area amministratore — Interno 63</title>
-<meta name="description" content="Pannello di gestione Interno 63: catalogo, vetrina, richieste d'ordine e dati del negozio.">
+<meta name="description" content="Pannello di gestione Interno 63: articoli, categorie, vetrina, richieste d'ordine e dati del negozio.">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#1d4a35">
 <link rel="stylesheet" href="style.css">
@@ -24,7 +24,7 @@
 <section class="gate-wrap" id="gateWrap" aria-label="Accesso amministratore">
   <span class="gate-ico" aria-hidden="true">🔐</span>
   <h1>Area amministratore</h1>
-  <p class="hint">Gestisci catalogo, vetrina, richieste d'ordine e dati del negozio Interno 63.</p>
+  <p class="hint">Gestisci articoli, categorie, vetrina, richieste d'ordine e dati del negozio Interno 63.</p>
   <form class="gate" id="gateForm">
     <label for="gatePass">Password amministratore</label>
     <input type="password" id="gatePass" autocomplete="off" placeholder="Password demo: interno63" required>
@@ -37,53 +37,102 @@
 <main class="admin-shell" id="adminShell" hidden>
   <div class="admin-stats" aria-label="Statistiche negozio">
     <div class="admin-stat"><b id="statProd">8</b><span>Articoli in catalogo</span></div>
+    <div class="admin-stat"><b id="statCat">4</b><span>Categorie</span></div>
     <div class="admin-stat"><b id="statVet">3</b><span>In vetrina</span></div>
-    <div class="admin-stat"><b id="statOrd">3</b><span>Richieste ricevute</span></div>
+    <div class="admin-stat"><b id="statOrd">3</b><span>Richieste</span></div>
     <div class="admin-stat"><b id="statTot">€ 192.90</b><span>Valore richieste</span></div>
   </div>
 
-  <div class="tabs" id="adminTabs" role="tablist">
-    <button class="tab attiva" data-tab="prod" type="button" aria-selected="true">Prodotti</button>
-    <button class="tab" data-tab="ord" type="button" aria-selected="false">Ordini</button>
-    <button class="tab" data-tab="set" type="button" aria-selected="false">Dati negozio</button>
+  <div class="tabs" id="adminTabs" role="tablist" aria-label="Sezioni del pannello">
+    <button class="tab attiva" data-tab="prod" type="button" role="tab" aria-selected="true">📦 Articoli</button>
+    <button class="tab" data-tab="cat" type="button" role="tab" aria-selected="false">🏷️ Categorie</button>
+    <button class="tab" data-tab="ord" type="button" role="tab" aria-selected="false">🧾 Ordini</button>
+    <button class="tab" data-tab="set" type="button" role="tab" aria-selected="false">⚙️ Dati negozio</button>
   </div>
 
-  <!-- TAB PRODOTTI -->
-  <div id="tab-prod" class="tabpane">
-    <form class="form-grid" id="prodForm">
-      <input type="hidden" id="fId">
-      <label>Nome<input id="fName" required maxlength="60" placeholder="Es. Barattolo miele personalizzato"></label>
-      <label>Categoria
-        <select id="fCat">
-          <option value="bomboniere">Bomboniere</option>
-          <option value="cofanetti">Cofanetti</option>
-          <option value="regalo">Articoli regalo</option>
-          <option value="matrimonio">Servizi matrimonio</option>
-        </select>
-      </label>
-      <label>Prezzo €<input id="fPrice" type="number" min="0" step="0.10" required placeholder="0.00"></label>
-      <label>URL foto <span class="hint">(opzionale)</span><input id="fImg" type="url" placeholder="https://..."></label>
-      <label class="wide">Descrizione<input id="fDesc" maxlength="220" placeholder="Descrizione breve per la scheda prodotto"></label>
-      <label class="check"><input type="checkbox" id="fFeat"> In vetrina</label>
-      <div class="cta-row wide">
-        <button class="btn" type="submit" id="prodSave">Salva prodotto</button>
-        <button class="btn btn-ghost" type="button" id="prodReset">Pulisci modulo</button>
+  <!-- TAB ARTICOLI -->
+  <div id="tab-prod" class="tabpane" role="tabpanel">
+    <div class="edit-card">
+      <div class="edit-head">
+        <h2 id="formTitolo">➕ Aggiungi un articolo</h2>
+        <button class="link" type="button" id="annullaModifica" hidden>↩ Annulla modifica</button>
       </div>
-    </form>
+      <div class="edit-grid">
+        <form class="form-grid" id="prodForm" autocomplete="off" novalidate>
+          <input type="hidden" id="fId">
+          <label>Nome articolo *
+            <input id="fName" required maxlength="60" placeholder="Es. Barattolo miele personalizzato">
+          </label>
+          <label>Prezzo € *
+            <input id="fPrice" type="number" min="0" step="0.10" required placeholder="0.00">
+          </label>
+          <label class="wide">Categoria *
+            <select id="fCat"></select>
+          </label>
+          <p class="form-aiuto wide">Manca la categoria giusta? <button class="link" type="button" id="vaiCategorie">Creane una nuova →</button> la trovi già selezionata al ritorno.</p>
+          <label>URL foto <span class="hint">(opzionale)</span>
+            <input id="fImg" type="url" placeholder="https://…">
+          </label>
+          <label class="wide">Descrizione <span class="hint" id="fDescCount">0/220</span>
+            <input id="fDesc" maxlength="220" placeholder="Descrizione breve per la scheda prodotto">
+          </label>
+          <label class="check wide"><input type="checkbox" id="fFeat"> Metti in vetrina nella homepage</label>
+          <div class="cta-row left wide">
+            <button class="btn" type="submit" id="prodSave">Salva articolo</button>
+            <button class="btn btn-ghost" type="button" id="prodReset">Pulisci</button>
+          </div>
+        </form>
+        <aside class="anteprima" aria-label="Anteprima dal vivo dell'articolo">
+          <p class="anteprima-tit">Anteprima live</p>
+          <div id="anteprimaCard"></div>
+          <p class="hint">Ecco come l'articolo apparirà nel negozio, aggiornato mentre compili.</p>
+        </aside>
+      </div>
+    </div>
     <div class="table-wrap" id="adminTable"></div>
   </div>
 
+  <!-- TAB CATEGORIE -->
+  <div id="tab-cat" class="tabpane" role="tabpanel" hidden>
+    <div class="edit-card">
+      <div class="edit-head">
+        <h2 id="catTitolo">🏷️ Nuova categoria</h2>
+        <button class="link" type="button" id="annullaCat" hidden>↩ Annulla modifica</button>
+      </div>
+      <form class="form-grid" id="catForm" autocomplete="off" novalidate>
+        <input type="hidden" id="cId">
+        <label>Nome categoria *
+          <input id="cNome" required maxlength="30" placeholder="Es. Confetteria artigianale">
+        </label>
+        <label class="wide">Icona
+          <div class="icon-picker" id="iconPicker" role="group" aria-label="Scegli l'icona della categoria"></div>
+        </label>
+        <div class="cta-row left wide">
+          <button class="btn" type="submit">Salva categoria</button>
+          <button class="btn btn-ghost" type="button" id="catReset">Pulisci</button>
+        </div>
+        <p class="hint wide">La categoria è subito disponibile nel form articoli, nei filtri del catalogo e nei riquadri della homepage. Rinominarla non perde il collegamento con gli articoli esistenti.</p>
+      </form>
+    </div>
+    <div class="table-wrap" id="catTable"></div>
+  </div>
+
   <!-- TAB ORDINI -->
-  <div id="tab-ord" class="tabpane" hidden></div>
+  <div id="tab-ord" class="tabpane" role="tabpanel" hidden></div>
 
   <!-- TAB DATI NEGOZIO -->
-  <div id="tab-set" class="tabpane" hidden>
-    <form class="form-grid" id="setForm">
-      <label>Nome negozio<input id="sName" required maxlength="40"></label>
-      <label>Telefono<input id="sPhone" required maxlength="30"></label>
-      <label class="check wide"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche)</label>
-      <div class="cta-row wide"><button class="btn" type="submit">Salva dati</button></div>
-    </form>
+  <div id="tab-set" class="tabpane" role="tabpanel" hidden>
+    <div class="edit-card">
+      <div class="edit-head"><h2>⚙️ Dati del negozio</h2></div>
+      <form class="form-grid" id="setForm" autocomplete="off">
+        <label>Nome negozio<input id="sName" required maxlength="40"></label>
+        <label>Telefono<input id="sPhone" required maxlength="30"></label>
+        <p class="hint wide">Nome e telefono compaiono nel footer di homepage e catalogo.</p>
+        <label class="check wide"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche agli articoli)</label>
+        <label class="check wide"><input type="checkbox" id="sResetCat"> Ripristina anche le categorie predefinite</label>
+        <div class="cta-row left wide"><button class="btn" type="submit">Salva dati</button></div>
+      </form>
+    </div>
   </div>
 </main>
 
