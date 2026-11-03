@@ -127,7 +127,7 @@
           <button class="btn" type="submit">Salva categoria</button>
           <button class="btn btn-ghost" type="button" id="catReset">Pulisci</button>
         </div>
-        <p class="hint wide">La categoria è subito disponibile nel form articoli, nei filtri del catalogo e nei riquadri della homepage. Rinominarla non perde il collegamento con gli articoli esistenti.</p>
+        <p class="hint wide">La categoria è subito disponibile nel form articoli, nei filtri del catalogo e nel menu del sito. Rinominarla non perde il collegamento con gli articoli esistenti.</p>
       </form>
     </div>
     <div class="table-wrap" id="catTable"></div>
@@ -174,14 +174,20 @@
           <input id="sProv" maxlength="2" placeholder="BA" style="text-transform:uppercase">
         </label>
         <label class="wide">Orari di apertura <span class="hint">(opzionale)</span>
-          <input id="sOrari" maxlength="90" placeholder="Lun–Sab 9:30–13:00 e 16:30–20:00">
+          <input id="sOrari" maxlength="90" placeholder="Lun–Sab 9:30–13:00 e 17:00–20:30">
+        </label>
+        <label class="wide">Pagina Facebook <span class="hint">(opzionale)</span>
+          <input id="sFb" type="url" maxlength="140" placeholder="https://www.facebook.com/…">
+        </label>
+        <label class="wide">Profilo Instagram <span class="hint">(opzionale)</span>
+          <input id="sIg" type="url" maxlength="140" placeholder="https://www.instagram.com/…">
         </label>
         <div class="anteprima wide" aria-live="polite">
           <p class="anteprima-tit">Anteprima riga contatti</p>
           <p class="hint" id="setAnteprima">…</p>
-          <p class="hint">Così compariranno i dati nel footer di homepage e catalogo, aggiornati mentre scrivi.</p>
+          <p class="hint">Così compariranno sede, recapiti, orari e social nel footer di homepage e catalogo, aggiornati mentre scrivi.</p>
         </div>
-        <p class="hint wide">Salvando, nome, sede, orari e contatti si aggiornano nel footer di homepage e catalogo.</p>
+        <p class="hint wide">Salvando, nome, sede, orari, contatti e link social si aggiornano nel footer di homepage e catalogo.</p>
         <label class="check wide"><input type="checkbox" id="sReset"> Ripristina catalogo iniziale (sostituisce le modifiche agli articoli)</label>
         <label class="check wide"><input type="checkbox" id="sResetCat"> Ripristina anche le categorie predefinite</label>
         <div class="cta-row left wide"><button class="btn" type="submit">Salva dati</button></div>

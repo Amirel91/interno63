@@ -1,11 +1,10 @@
-/* Interno 63 — admin.js: pannello admin.html. Gestione guidata di articoli, categorie,
-   richieste d'ordine e dati completi del negozio (nome, contatti, indirizzo).
-   Dati condivisi con lo storefront via localStorage. */
+/* Interno 63 — admin.js: pannello admin.html. Gestione completa di articoli, categorie,
+   richieste d'ordine, dati negozio e backup. Dati condivisi con lo storefront via localStorage. */
 
 (() => {
   'use strict';
 
-  /* ---------- Dati iniziali (catalogo ripristinabile) ---------- */
+  /* ---------- Dati iniziali (ripristinabili) ---------- */
   const CATALOGO_INIZIALE = [
     { id: 1, nome: 'Bomboniera Oliva Borbone', prezzo: 8.5, categoria: 'bomboniere', vetrina: true, descrizione: 'Barattolino in vetro con confetti Oliva, nastro in raso e tag con i nomi degli sposi.', img: '' },
     { id: 2, nome: 'Scatola Regalo "Dolce Attesa"', prezzo: 14.0, categoria: 'regalo', vetrina: false, descrizione: 'Candela artigianale, confetti misti e biglietto scritto a mano: pronta da regalare.', img: '' },
@@ -26,7 +25,6 @@
 
   const EMOJI_CATEGORIE = ['🎀','📦','🎁','💍','🕯️','🍯','🫙','🌿','🌸','🌼','🕊️','🥂','🍰','🍼','🧺','🧸','✨','🫖'];
 
-  /* Dati negozio iniziali: tutto ciò che compare nei footer del sito */
   const NEGOZIO_INIZIALE = {
     nome: 'Interno 63',
     telefono: '351 234 5678',
@@ -34,21 +32,22 @@
     cap: '70043',
     citta: 'Monopoli',
     prov: 'BA',
-    email: 'info@interno63.it'
+    email: 'info@interno63.it',
+    orari: ''
   };
 
-  /* Mappa chiave ↔ campo del form "Dati negozio" (più selettori possibili = robustezza) */
   const CAMPI_NEGOZIO = [
     { chiave: 'nome', sel: ['#sName'], label: 'Nome negozio', obbligatorio: true },
-    { chiave: 'telefono', sel: ['#sPhone', '#sTel'], label: 'Telefono', obbligatorio: true },
-    { chiave: 'via', sel: ['#sVia', '#sIndirizzo', '#sAddress'], label: 'Via e numero civico' },
+    { chiave: 'telefono', sel: ['#sPhone'], label: 'Telefono', obbligatorio: true },
+    { chiave: 'email', sel: ['#sEmail'], label: 'Email' },
+    { chiave: 'via', sel: ['#sVia'], label: 'Via e numero civico' },
     { chiave: 'cap', sel: ['#sCap'], label: 'CAP' },
-    { chiave: 'citta', sel: ['#sCitta', '#sCity'], label: 'Città' },
-    { chiave: 'prov', sel: ['#sProv', '#sProvincia'], label: 'Provincia' },
-    { chiave: 'email', sel: ['#sEmail', '#sMail'], label: 'Email' }
+    { chiave: 'citta', sel: ['#sCitta'], label: 'Città' },
+    { chiave: 'prov', sel: ['#sProv'], label: 'Provincia' },
+    { chiave: 'orari', sel: ['#sOrari'], label: 'Orari' }
   ];
 
-  const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', ordini: 'i63-ordini', negozio: 'i63-negozio', sessione: 'i63-admin' };
+  const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', ordini: 'i63-ordini', negozio: 'i63-negozio', sessione: 'i63-admin', pass: 'i63-pass' };
   const PASSWORD_DEMO = 'interno63';
 
   /* ---------- Stato ---------- */
@@ -57,7 +56,11 @@
   let ordini = [];
   let negozio = { ...NEGOZIO_INIZIALE };
   let iconaScelta = '🎁';
-  let tornaAProdotti = false; /* crea-categoria partita dal form articolo */
+  let tornaAProdotti = false;
+  let imgDaFile = '';
+  let testoRicercaProd = '';
+  let filtroCatProd = 'tutti';
+  let filtroOrdini = 'tutte';
 
   /* ---------- Utility ---------- */
   const $ = sel => document.querySelector(sel);
@@ -84,6 +87,27 @@
     catch (e) { console.warn('Impossibile salvare i dati locali:', e); }
   }
 
+  /* La password è una stringa: lettura dedicata (leggiJSON non la restituirebbe) */
+  function leggiPassword() {
+    try {
+      const v = JSON.parse(localStorage.getItem(CHIAVI.pass));
+      if (typeof v === 'string' && v.length) return v;
+    } catch (e) { /* nessuna password salvata */ }
+    return PASSWORD_DEMO;
+  }
+
+  function scarica(nome, contenuto, tipo) {
+    const blob = new Blob([contenuto], { type: tipo });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   let toastTimer = null;
   function toast(messaggio) {
     const el = $('#toast');
@@ -91,7 +115,7 @@
     el.textContent = messaggio;
     el.classList.add('visibile');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('visibile'), 3000);
+    toastTimer = setTimeout(() => el.classList.remove('visibile'), 3200);
   }
 
   const nomeCat = id => { const c = categorie.find(x => x.id === id); return c ? c.nome : (id || 'Senza categoria'); };
@@ -117,11 +141,14 @@
     if (shell) shell.hidden = false;
     if (esci) esci.hidden = false;
     aggiornaSelectCategorie();
+    aggiornaFiltraCat();
     renderIconPicker();
     renderTabella();
     renderCategorie();
+    filtroOrdini = 'tutte';
     renderOrdini();
     applicaNegozioForm();
+    aggiornaAnteprimaNegozio();
     aggiornaStats();
     aggiornaContatoreDesc();
     aggiornaAnteprima();
@@ -131,16 +158,22 @@
   /* ---------- Statistiche ---------- */
   function aggiornaStats() {
     const imposta = (sel, valore) => { const el = $(sel); if (el) el.textContent = valore; };
+    const aperte = ordini.filter(o => !o.evaso).length;
     imposta('#statProd', String(catalogo.length));
+    imposta('#statCat', String(categorie.length));
     imposta('#statVet', String(catalogo.filter(p => p.vetrina).length));
     imposta('#statOrd', String(ordini.length));
+    imposta('#statAperte', String(aperte));
     imposta('#statTot', euro(ordini.reduce((s, o) => s + (Number(o.totale) || 0), 0)));
-    imposta('#statCat', String(categorie.length));
+    imposta('#badgeProd', String(catalogo.length));
+    imposta('#badgeCat', String(categorie.length));
+    const badgeOrd = $('#badgeOrd');
+    if (badgeOrd) { badgeOrd.textContent = String(ordini.length); badgeOrd.hidden = ordini.length === 0; }
   }
 
-  /* ---------- Tab ---------- */
+  /* ---------- Tab (5 sezioni, backup compreso) ---------- */
   function mostraTab(nome) {
-    ['prod', 'cat', 'ord', 'set'].forEach(t => {
+    ['prod', 'cat', 'ord', 'set', 'bak'].forEach(t => {
       const pannello = $('#tab-' + t);
       if (pannello) pannello.hidden = t !== nome;
     });
@@ -151,7 +184,7 @@
     });
   }
 
-  /* ---------- Modulo prodotti ---------- */
+  /* ---------- Modulo articoli ---------- */
   function setModalitaModifica(attiva) {
     const titolo = $('#formTitolo');
     const annulla = $('#annullaModifica');
@@ -162,9 +195,13 @@
   }
 
   function riempiForm(p) {
+    if (!p) return;
     aggiornaSelectCategorie(p.categoria);
-    const campi = { fId: String(p.id), fName: p.nome, fCat: p.categoria, fPrice: String(p.prezzo), fImg: p.img || '', fDesc: p.descrizione || '' };
+    const campi = { fId: String(p.id), fName: p.nome, fPrice: String(p.prezzo), fImg: p.img && !String(p.img).startsWith('data:') ? p.img : '', fDesc: p.descrizione || '' };
     Object.entries(campi).forEach(([id, valore]) => { const el = $('#' + id); if (el) el.value = valore; });
+    imgDaFile = p.img && String(p.img).startsWith('data:') ? p.img : '';
+    const file = $('#fImgFile');
+    if (file) file.value = '';
     const feat = $('#fFeat');
     if (feat) feat.checked = Boolean(p.vetrina);
     setModalitaModifica(true);
@@ -177,6 +214,7 @@
     if (form) form.reset();
     const id = $('#fId');
     if (id) id.value = '';
+    imgDaFile = '';
     setModalitaModifica(false);
     aggiornaContatoreDesc();
     aggiornaAnteprima();
@@ -187,25 +225,62 @@
     if (!sel) return;
     const corrente = preferita || sel.value;
     sel.innerHTML = categorie.map(c => `<option value="${esc(c.id)}">${esc(c.icona)} ${esc(c.nome)}</option>`).join('');
-    const valida = categorie.some(c => c.id === corrente);
-    if (valida) sel.value = corrente;
+    if (categorie.some(c => c.id === corrente)) sel.value = corrente;
     else if (categorie[0]) sel.value = categorie[0].id;
   }
 
-  function selezionaCategoria(id) {
-    const sel = $('#fCat');
-    if (sel && categorie.some(c => c.id === id)) sel.value = id;
-    aggiornaAnteprima();
+  function aggiornaFiltraCat() {
+    const sel = $('#filtraCat');
+    if (!sel) return;
+    const corrente = sel.value || 'tutti';
+    sel.innerHTML = `<option value="tutti">Tutte le categorie</option>` +
+      categorie.map(c => `<option value="${esc(c.id)}">${esc(c.icona)} ${esc(c.nome)}</option>`).join('');
+    sel.value = categorie.some(c => c.id === corrente) ? corrente : 'tutti';
+    filtroCatProd = sel.value;
   }
 
-  /* Anteprima live della card mentre si compila il form */
+  /* ---------- Immagine dal dispositivo (ridimensionata per restare leggera) ---------- */
+  function caricaImmagineFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Formato non supportato: scegli un file immagine.'); return; }
+    if (file.size > 6 * 1024 * 1024) { toast('Foto troppo grande (max 6 MB): comprimila prima di caricarla.'); return; }
+    const lettore = new FileReader();
+    lettore.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const lato = 900;
+          const scala = Math.min(1, lato / Math.max(img.width, img.height));
+          const tela = document.createElement('canvas');
+          tela.width = Math.round(img.width * scala);
+          tela.height = Math.round(img.height * scala);
+          tela.getContext('2d').drawImage(img, 0, 0, tela.width, tela.height);
+          imgDaFile = tela.toDataURL('image/jpeg', 0.82);
+        } catch (e) {
+          if (lettore.result.length > 1_400_000) { toast('Foto troppo pesante dopo la conversione: usane una più piccola.'); return; }
+          imgDaFile = String(lettore.result);
+        }
+        const url = $('#fImg');
+        if (url) url.value = '';
+        aggiornaAnteprima();
+        toast('Foto caricata: la vedi nell\'anteprima a lato.');
+      };
+      img.onerror = () => toast('Impossibile leggere l\'immagine: riprova.');
+      img.src = String(lettore.result);
+    };
+    lettore.onerror = () => toast('Lettura del file non riuscita: riprova.');
+    lettore.readAsDataURL(file);
+  }
+
+  /* ---------- Anteprima live ---------- */
   function aggiornaAnteprima() {
     const box = $('#anteprimaCard');
     if (!box) return;
     const nome = (($('#fName') && $('#fName').value) || '').trim();
     const prezzo = Number(($('#fPrice') && $('#fPrice').value) || 0);
     const cat = ($('#fCat') && $('#fCat').value) || '';
-    const img = (($('#fImg') && $('#fImg').value) || '').trim();
+    const url = (($('#fImg') && $('#fImg').value) || '').trim();
+    const img = imgDaFile || url;
     const desc = (($('#fDesc') && $('#fDesc').value) || '').trim();
     const vetrina = Boolean($('#fFeat') && $('#fFeat').checked);
     const media = img
@@ -227,17 +302,19 @@
     if (cont && campo) cont.textContent = `${campo.value.length}/220`;
   }
 
+  /* ---------- Salvataggio articoli ---------- */
   function salvaProdotto(evento) {
     evento.preventDefault();
     const nome = (($('#fName') && $('#fName').value) || '').trim();
     if (!nome) { toast('Il nome dell\'articolo è obbligatorio.'); return; }
     const prezzoGrezzo = Number(($('#fPrice') && $('#fPrice').value) || 0);
     if (!Number.isFinite(prezzoGrezzo) || prezzoGrezzo < 0) { toast('Inserisci un prezzo valido (maggiore o uguale a 0).'); return; }
+    const catScelta = ($('#fCat') && $('#fCat').value) || '';
     const dati = {
       nome,
-      categoria: ($('#fCat') && $('#fCat').value) || (categorie[0] ? categorie[0].id : 'regalo'),
+      categoria: categorie.some(c => c.id === catScelta) ? catScelta : (categorie[0] ? categorie[0].id : ''),
       prezzo: Math.max(0, prezzoGrezzo),
-      img: (($('#fImg') && $('#fImg').value) || '').trim(),
+      img: imgDaFile || (($('#fImg') && $('#fImg').value) || '').trim(),
       descrizione: (($('#fDesc') && $('#fDesc').value) || '').trim(),
       vetrina: Boolean($('#fFeat') && $('#fFeat').checked)
     };
@@ -292,17 +369,29 @@
     toast(p.vetrina ? `“${p.nome}” è ora in vetrina sulla home.` : `“${p.nome}” rimosso dalla vetrina.`);
   }
 
-  /* ---------- Tabella prodotti ---------- */
+  /* ---------- Tabella articoli (con ricerca e filtro categoria) ---------- */
   function renderTabella() {
     const box = $('#adminTable');
     if (!box) return;
+    const q = testoRicercaProd.trim().toLowerCase();
+    let lista = catalogo.slice();
+    if (filtroCatProd !== 'tutti') lista = lista.filter(p => p.categoria === filtroCatProd);
+    if (q) lista = lista.filter(p => `${p.nome} ${p.descrizione || ''} ${nomeCat(p.categoria)}`.toLowerCase().includes(q));
+    const cont = $('#contProd');
+    if (cont) cont.textContent = lista.length
+      ? `${lista.length} di ${catalogo.length} ${catalogo.length === 1 ? 'articolo' : 'articoli'}`
+      : 'Nessun articolo corrisponde ai filtri';
     if (!catalogo.length) {
       box.innerHTML = '<p class="vuoto">Nessun articolo in catalogo: aggiungi il primo dal modulo qui sopra.</p>';
       return;
     }
+    if (!lista.length) {
+      box.innerHTML = '<p class="vuoto">Nessun risultato: cambia ricerca o categoria filtro.</p>';
+      return;
+    }
     box.innerHTML = `<table class="tabella">
       <thead><tr><th>Articolo</th><th>Categoria</th><th>Prezzo</th><th>Vetrina</th><th>Azioni</th></tr></thead>
-      <tbody>${catalogo.map(p => `<tr>
+      <tbody>${lista.map(p => `<tr>
         <td><b>${esc(p.nome)}</b>${p.descrizione ? `<br><span class="hint">${esc(p.descrizione)}</span>` : ''}</td>
         <td>${iconaCat(p.categoria)} ${esc(nomeCat(p.categoria))}</td>
         <td><strong>${euro(p.prezzo)}</strong></td>
@@ -333,6 +422,7 @@
   }
 
   function riempiFormCategoria(c) {
+    if (!c) return;
     const id = $('#cId');
     if (id) id.value = c.id;
     const nome = $('#cNome');
@@ -379,9 +469,9 @@
     pulisciFormCategoria();
     renderCategorie();
     aggiornaSelectCategorie(idPronto);
+    aggiornaFiltraCat();
     renderTabella();
     aggiornaStats();
-    /* Ritorno automatico se la categoria è nata dal form articolo */
     if (tornaAProdotti) {
       tornaAProdotti = false;
       mostraTab('prod');
@@ -403,6 +493,7 @@
     if (($('#cId') && $('#cId').value) === id) pulisciFormCategoria();
     renderCategorie();
     aggiornaSelectCategorie();
+    aggiornaFiltraCat();
     renderTabella();
     aggiornaStats();
     toast(`Categoria “${c.nome}” eliminata.`);
@@ -431,17 +522,32 @@
     </table>`;
   }
 
-  /* ---------- Ordini ---------- */
+  /* ---------- Ordini (con filtro stato e CSV) ---------- */
   function renderOrdini() {
-    const box = $('#tab-ord');
+    const box = $('#ordiniBox');
     if (!box) return;
+    document.querySelectorAll('#ordFiltri .chip').forEach(c => {
+      const attiva = c.dataset.filtro === filtroOrdini;
+      c.classList.toggle('attiva', attiva);
+      c.setAttribute('aria-pressed', String(attiva));
+    });
+    const cont = $('#contOrd');
     if (!ordini.length) {
+      if (cont) cont.textContent = '';
       box.innerHTML = '<p class="vuoto">Nessuna richiesta d\'ordine: compariranno qui quando i clienti inviano il carrello dal negozio.</p>';
+      return;
+    }
+    const lista = filtroOrdini === 'aperte' ? ordini.filter(o => !o.evaso)
+      : filtroOrdini === 'chiuse' ? ordini.filter(o => o.evaso)
+      : ordini.slice();
+    if (cont) cont.textContent = `${lista.length} ${lista.length === 1 ? 'richiesta' : 'richieste'} su ${ordini.length}`;
+    if (!lista.length) {
+      box.innerHTML = '<p class="vuoto">Nessuna richiesta in questo stato: cambia filtro qui sopra.</p>';
       return;
     }
     box.innerHTML = `<table class="tabella">
       <thead><tr><th>Data</th><th>Cliente</th><th>Articoli</th><th>Totale</th><th>Stato</th><th>Azioni</th></tr></thead>
-      <tbody>${ordini.map(o => `<tr>
+      <tbody>${lista.map(o => `<tr>
         <td>${esc(o.data)}</td>
         <td><b>${esc(o.cliente)}</b>${o.recapito ? `<br><span class="hint">${esc(o.recapito)}</span>` : ''}</td>
         <td>${esc(o.articoli)}</td>
@@ -476,12 +582,43 @@
     toast('Richiesta d\'ordine eliminata.');
   }
 
-  /* ---------- Dati negozio (tutti i campi modificabili) ---------- */
+  function esportaCSV() {
+    if (!ordini.length) { toast('Nessuna richiesta da esportare: la lista è vuota.'); return; }
+    const cella = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const righe = [
+      ['Data', 'Cliente', 'Recapito', 'Articoli', 'Totale €', 'Stato'].map(cella).join(';'),
+      ...ordini.map(o => [o.data, o.cliente, o.recapito || '', o.articoli, (Number(o.totale) || 0).toFixed(2).replace('.', ','), o.evaso ? 'Evasa' : 'Da evadere'].map(cella).join(';'))
+    ];
+    scarica(`interno63-richieste-${new Date().toISOString().slice(0, 10)}.csv`, '\uFEFF' + righe.join('\r\n'), 'text/csv;charset=utf-8');
+    toast('CSV scaricato: aprilo con Excel o Fogli Google.');
+  }
+
+  /* ---------- Dati negozio ---------- */
   function applicaNegozioForm() {
     CAMPI_NEGOZIO.forEach(c => {
       const el = primoEsistente(c.sel);
       if (el) el.value = negozio[c.chiave] ?? '';
     });
+    aggiornaAnteprimaNegozio();
+  }
+
+  function negozioComposto() {
+    const n = { ...NEGOZIO_INIZIALE, ...negozio };
+    const comune = [n.cap, n.citta, n.prov ? `(${n.prov})` : ''].filter(Boolean).join(' ');
+    return { ...n, sede: [n.via, comune].filter(Boolean).join(', ') };
+  }
+
+  function aggiornaAnteprimaNegozio() {
+    const el = $('#setAnteprima');
+    if (!el) return;
+    const d = negozioComposto();
+    const pezzi = [d.sede, d.telefono, d.email].filter(Boolean).join(' · ');
+    el.textContent = pezzi + (d.orari ? ` — ${d.orari}` : '') || '…';
+  }
+
+  function aggiornaFootCitta() {
+    const el = $('#footCitta');
+    if (el) el.textContent = negozio.citta ? `${negozio.citta}${negozio.prov ? ` (${negozio.prov})` : ''}` : NEGOZIO_INIZIALE.citta;
   }
 
   function salvaNegozio(evento) {
@@ -513,13 +650,13 @@
       scriviJSON(CHIAVI.categorie, categorie);
     }
     if (resetCatalogo || resetCategorie) {
-      /* Articoli rimasti su categorie cancellate → prima categoria disponibile */
       const prima = categorie[0] ? categorie[0].id : '';
       catalogo.forEach(p => { if (!categorie.some(c => c.id === p.categoria)) p.categoria = prima; });
       scriviJSON(CHIAVI.catalogo, catalogo);
       pulisciForm();
       pulisciFormCategoria();
       aggiornaSelectCategorie();
+      aggiornaFiltraCat();
       renderTabella();
       renderCategorie();
       aggiornaStats();
@@ -527,7 +664,105 @@
       if (resetCatEl) resetCatEl.checked = false;
       messaggio = 'Dati salvati: catalogo' + (resetCategorie ? ' e categorie' : '') + ' ripristinati ai valori iniziali.';
     }
+    aggiornaFootCitta();
     toast(messaggio);
+  }
+
+  /* ---------- Backup ---------- */
+  function esportaBackup() {
+    const pacchetto = {
+      versione: 2,
+      esportatoIl: new Date().toISOString(),
+      catalogo, categorie, ordini, negozio
+    };
+    scarica(`interno63-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(pacchetto, null, 2), 'application/json');
+    toast('Backup scaricato: conservalo al sicuro, permette il trasferimento su un altro browser.');
+  }
+
+  function importaBackup(file) {
+    if (!file) return;
+    const lettore = new FileReader();
+    lettore.onload = () => {
+      try {
+        const dati = JSON.parse(String(lettore.result));
+        if (!dati || typeof dati !== 'object' || !Array.isArray(dati.catalogo)) {
+          toast('File non valido: manca il catalogo. Usa un backup esportato da questo pannello.');
+          return;
+        }
+        catalogo = dati.catalogo.filter(p => p && p.nome);
+        categorie = Array.isArray(dati.categorie) ? dati.categorie.filter(c => c && c.id) : CATEGORIE_INIZIALI.map(c => ({ ...c }));
+        ordini = Array.isArray(dati.ordini) ? dati.ordini : [];
+        negozio = { ...NEGOZIO_INIZIALE, ...(dati.negozio && typeof dati.negozio === 'object' ? dati.negozio : {}) };
+        const prima = categorie[0] ? categorie[0].id : '';
+        catalogo.forEach(p => { if (!categorie.some(c => c.id === p.categoria)) p.categoria = prima; });
+        scriviJSON(CHIAVI.catalogo, catalogo);
+        scriviJSON(CHIAVI.categorie, categorie);
+        scriviJSON(CHIAVI.ordini, ordini);
+        scriviJSON(CHIAVI.negozio, negozio);
+        pulisciForm();
+        pulisciFormCategoria();
+        aggiornaSelectCategorie();
+        aggiornaFiltraCat();
+        filtroOrdini = 'tutte';
+        renderTabella();
+        renderCategorie();
+        renderOrdini();
+        applicaNegozioForm();
+        aggiornaStats();
+        aggiornaFootCitta();
+        toast('Backup importato: i dati di questo browser sono stati sostituiti.');
+      } catch (e) {
+        toast('Impossibile leggere il file: verifica che sia un backup JSON valido.');
+      }
+    };
+    lettore.onerror = () => toast('Lettura del file non riuscita: riprova.');
+    lettore.readAsText(file);
+  }
+
+  function ripristina(tipo) {
+    const conferme = {
+      catalogo: 'Ripristinare il catalogo iniziale? Le modifiche agli articoli andranno perse.',
+      categorie: 'Ripristinare le categorie predefinite? Gli articoli verranno ricollegati automaticamente.',
+      ordini: 'Eliminare TUTTE le richieste d\'ordine? Operazione non reversibile.',
+      tutto: 'Ripristinare catalogo, categorie e richieste ai dati di partenza? Ogni modifica andrà persa.'
+    };
+    if (!confirm(conferme[tipo] || 'Procedere con il ripristino?')) return;
+    if (tipo === 'catalogo' || tipo === 'tutto') {
+      catalogo = CATALOGO_INIZIALE.map(p => ({ ...p }));
+      scriviJSON(CHIAVI.catalogo, catalogo);
+    }
+    if (tipo === 'categorie' || tipo === 'tutto') {
+      categorie = CATEGORIE_INIZIALI.map(c => ({ ...c }));
+      scriviJSON(CHIAVI.categorie, categorie);
+    }
+    if (tipo === 'ordini' || tipo === 'tutto') {
+      ordini = [];
+      scriviJSON(CHIAVI.ordini, ordini);
+    }
+    const prima = categorie[0] ? categorie[0].id : '';
+    catalogo.forEach(p => { if (!categorie.some(c => c.id === p.categoria)) p.categoria = prima; });
+    scriviJSON(CHIAVI.catalogo, catalogo);
+    pulisciForm();
+    pulisciFormCategoria();
+    aggiornaSelectCategorie();
+    aggiornaFiltraCat();
+    filtroOrdini = 'tutte';
+    renderTabella();
+    renderCategorie();
+    renderOrdini();
+    aggiornaStats();
+    const nomi = { catalogo: 'Catalogo ripristinato', categorie: 'Categorie ripristinate', ordini: 'Richieste eliminate', tutto: 'Tutto ripristinato ai dati di partenza' };
+    toast(nomi[tipo] || 'Ripristino completato.');
+  }
+
+  function cambiaPassword() {
+    const campo = $('#sPass');
+    if (!campo) return;
+    const nuova = campo.value.trim();
+    if (nuova.length < 4) { toast('Password troppo corta: minimo 4 caratteri.'); return; }
+    scriviJSON(CHIAVI.pass, nuova);
+    campo.value = '';
+    toast('Password aggiornata: usala al prossimo accesso.');
   }
 
   /* ---------- Eventi ---------- */
@@ -539,7 +774,7 @@
       e.preventDefault();
       const campo = $('#gatePass');
       const msg = $('#gateMsg');
-      if (campo && campo.value === PASSWORD_DEMO) {
+      if (campo && campo.value === leggiPassword()) {
         if (msg) msg.hidden = true;
         campo.value = '';
         apriSessione();
@@ -556,9 +791,14 @@
       if (tab && tab.dataset.tab) mostraTab(tab.dataset.tab);
     });
 
-    /* Prodotti */
+    /* Articoli */
     su('#prodForm', 'submit', salvaProdotto);
-    su('#prodForm', 'input', () => { aggiornaContatoreDesc(); aggiornaAnteprima(); });
+    su('#prodForm', 'input', e => {
+      if (e.target && e.target.id === 'fImg') { imgDaFile = ''; const f = $('#fImgFile'); if (f) f.value = ''; }
+      aggiornaContatoreDesc();
+      aggiornaAnteprima();
+    });
+    su('#fImgFile', 'change', e => caricaImmagineFile(e.target.files && e.target.files[0]));
     su('#prodReset', 'click', () => {
       pulisciForm();
       const nome = $('#fName');
@@ -569,37 +809,15 @@
       pulisciForm();
       const nome = $('#fName');
       if (nome) nome.focus();
-      toast('Modifica annullata: modulo pronto per un nuovo articolo.');
     });
     su('#vaiCategorie', 'click', () => {
       tornaAProdotti = true;
       mostraTab('cat');
       const nome = $('#cNome');
       if (nome) nome.focus();
-      toast('Crea la categoria: al salvataggio torni qui con lei già selezionata.');
     });
-    su('#adminTable', 'click', e => {
-      const btn = e.target.closest('button[data-azione]');
-      if (!btn) return;
-      const id = Number(btn.dataset.id);
-      const azione = btn.dataset.azione;
-      if (azione === 'modifica') {
-        const p = catalogo.find(x => x.id === id);
-        if (p) {
-          riempiForm(p);
-          mostraTab('prod');
-          const nome = $('#fName');
-          if (nome) nome.focus();
-          toast(`Stai modificando “${p.nome}”.`);
-        }
-      } else if (azione === 'elimina') {
-        eliminaProdotto(id);
-      } else if (azione === 'vetrina') {
-        cambiaVetrina(id);
-      } else if (azione === 'duplica') {
-        duplicaProdotto(id);
-      }
-    });
+    su('#cercaProd', 'input', e => { testoRicercaProd = e.target.value || ''; renderTabella(); });
+    su('#filtraCat', 'change', e => { filtroCatProd = e.target.value || 'tutti'; renderTabella(); });
 
     /* Categorie */
     su('#catForm', 'submit', salvaCategoria);
@@ -607,65 +825,99 @@
       pulisciFormCategoria();
       const nome = $('#cNome');
       if (nome) nome.focus();
-      toast('Modulo categoria pulito.');
     });
     su('#annullaCat', 'click', () => {
       pulisciFormCategoria();
       const nome = $('#cNome');
       if (nome) nome.focus();
-      toast('Modifica categoria annullata.');
-    });
-    su('#iconPicker', 'click', e => {
-      const btn = e.target.closest('button[data-icona]');
-      if (!btn) return;
-      iconaScelta = btn.dataset.icona;
-      renderIconPicker();
-    });
-    su('#catTable', 'click', e => {
-      const btn = e.target.closest('button[data-azione]');
-      if (!btn) return;
-      const idCat = btn.dataset.cat;
-      if (btn.dataset.azione === 'modifica-cat') {
-        const c = categorie.find(x => x.id === idCat);
-        if (c) {
-          riempiFormCategoria(c);
-          toast(`Stai modificando la categoria “${c.nome}”.`);
-        }
-      } else if (btn.dataset.azione === 'elimina-cat') {
-        eliminaCategoria(idCat);
-      }
     });
 
     /* Ordini */
-    su('#tab-ord', 'click', e => {
-      const btn = e.target.closest('button[data-azione]');
-      if (!btn) return;
-      const id = Number(btn.dataset.id);
-      if (btn.dataset.azione === 'evasa') cambiaStatoOrdine(id);
-      else if (btn.dataset.azione === 'elimina-ordine') eliminaOrdine(id);
+    su('#ordFiltri', 'click', e => {
+      const chip = e.target.closest('.chip');
+      if (chip && chip.dataset.filtro) { filtroOrdini = chip.dataset.filtro; renderOrdini(); }
     });
+    su('#esportaCSV', 'click', esportaCSV);
 
     /* Dati negozio */
     su('#setForm', 'submit', salvaNegozio);
+    su('#setForm', 'input', aggiornaAnteprimaNegozio);
+
+    /* Backup */
+    su('#btnEsporta', 'click', esportaBackup);
+    su('#fileImporta', 'change', e => {
+      const btn = $('#btnImporta');
+      const file = e.target.files && e.target.files[0];
+      if (btn) btn.disabled = !file;
+    });
+    su('#btnImporta', 'click', () => {
+      const input = $('#fileImporta');
+      const file = input && input.files && input.files[0];
+      if (!file) { toast('Scegli prima un file di backup.'); return; }
+      if (!confirm('Importare il backup? Sostituirà integralmente i dati di questo browser.')) return;
+      importaBackup(file);
+    });
+    su('#btnPass', 'click', cambiaPassword);
+
+    /* Ripristini rapidi (delegati: più pulsanti con data-ripristina) */
+    document.addEventListener('click', e => {
+      const rip = e.target.closest('[data-ripristina]');
+      if (rip) { ripristina(rip.dataset.ripristina); return; }
+      const icona = e.target.closest('.icona-btn');
+      if (icona) { iconaScelta = icona.dataset.icona || '🎁'; renderIconPicker(); return; }
+      const btn = e.target.closest('[data-azione]');
+      if (!btn) return;
+      const azione = btn.dataset.azione;
+      const id = Number(btn.dataset.id);
+      if (azione === 'vetrina') cambiaVetrina(id);
+      else if (azione === 'modifica') {
+        const p = catalogo.find(x => x.id === id);
+        if (p) { riempiForm(p); mostraTab('prod'); ($('#fName') || {}).focus?.(); }
+      }
+      else if (azione === 'duplica') duplicaProdotto(id);
+      else if (azione === 'elimina') eliminaProdotto(id);
+      else if (azione === 'modifica-cat') riempiFormCategoria(categorie.find(c => c.id === btn.dataset.cat));
+      else if (azione === 'elimina-cat') eliminaCategoria(btn.dataset.cat);
+      else if (azione === 'evasa') cambiaStatoOrdine(id);
+      else if (azione === 'elimina-ordine') eliminaOrdine(id);
+    });
   }
 
   /* ---------- Avvio ---------- */
   function init() {
-    const salvato = leggiJSON(CHIAVI.catalogo, []);
-    catalogo = Array.isArray(salvato) && salvato.length ? salvato : CATALOGO_INIZIALE.map(p => ({ ...p }));
-    const cats = leggiJSON(CHIAVI.categorie, []);
-    categorie = Array.isArray(cats) && cats.length ? cats.filter(c => c && c.id && c.nome) : CATEGORIE_INIZIALI.map(c => ({ ...c }));
+    /* Catalogo: rispetto anche un salvataggio vuoto (scelta esplicita dell'admin) */
+    const salvato = leggiJSON(CHIAVI.catalogo, null);
+    catalogo = Array.isArray(salvato) ? salvato : CATALOGO_INIZIALE.map(p => ({ ...p }));
+
+    let catSalvate = null;
+    try {
+      const grezzo = localStorage.getItem(CHIAVI.categorie);
+      if (grezzo) catSalvate = JSON.parse(grezzo);
+    } catch (e) { catSalvate = null; }
+    categorie = Array.isArray(catSalvate)
+      ? catSalvate.filter(c => c && c.id)
+      : CATEGORIE_INIZIALI.map(c => ({ ...c }));
+
     ordini = leggiJSON(CHIAVI.ordini, []);
     const n = leggiJSON(CHIAVI.negozio, {});
     negozio = (n && typeof n === 'object') ? { ...NEGOZIO_INIZIALE, ...n } : { ...NEGOZIO_INIZIALE };
 
     const anno = $('#anno');
     if (anno) anno.textContent = String(new Date().getFullYear());
-
+    aggiornaFootCitta();
     collegaEventi();
 
-    /* Sessione già aperta da una visita precedente: entra direttamente */
-    if (leggiJSON(CHIAVI.sessione, false) === true) apriDashboard();
+    /* Sessione già aperta → salta il gate */
+    let sessioneAperta = false;
+    try { sessioneAperta = JSON.parse(localStorage.getItem(CHIAVI.sessione)) === true; } catch (e) { sessioneAperta = false; }
+    if (sessioneAperta) {
+      const gate = $('#gateWrap');
+      if (gate) gate.hidden = true;
+      apriDashboard();
+    } else {
+      const campo = $('#gatePass');
+      if (campo) campo.focus();
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
