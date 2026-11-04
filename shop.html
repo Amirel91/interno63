@@ -6,6 +6,7 @@
 <title>Catalogo — Interno 63</title>
 <meta name="description" content="Il catalogo completo di Interno 63: bomboniere artigianali, cofanetti regalo, articoli regalo e servizi matrimonio. Filtra, cerca e ordina in pochi tocchi.">
 <meta name="theme-color" content="#1d4a35">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='23' fill='%231d4a35'/%3E%3Cellipse cx='15.5' cy='19' rx='7.2' ry='4.6' fill='%23c9a24b' transform='rotate(-28 15.5 19)'/%3E%3Cellipse cx='32.5' cy='19' rx='7.2' ry='4.6' fill='%23c9a24b' transform='rotate(28 32.5 19)'/%3E%3Cellipse cx='16.5' cy='29.5' rx='6.2' ry='4' fill='%23e8d9ae' transform='rotate(28 16.5 29.5)'/%3E%3Cellipse cx='31.5' cy='29.5' rx='6.2' ry='4' fill='%23e8d9ae' transform='rotate(-28 31.5 29.5)'/%3E%3Ccircle cx='24' cy='24' r='4' fill='%23fdfaf3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="shop">
@@ -13,7 +14,19 @@
 
 <!-- HEADER + NAV -->
 <header class="nav">
-  <a class="brand" href="index.html"><span class="dot"></span> Interno <b>63</b></a>
+  <a class="brand" href="index.html" aria-label="Interno 63 — torna alla home">
+    <!-- Logo: fiocco regalo su tondo verde, nei colori del brand -->
+    <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="22.5" fill="#1d4a35"/>
+      <circle cx="24" cy="24" r="21.2" fill="none" stroke="#c9a24b" stroke-width="1.6"/>
+      <ellipse cx="15.5" cy="19" rx="7.2" ry="4.6" fill="#c9a24b" transform="rotate(-28 15.5 19)"/>
+      <ellipse cx="32.5" cy="19" rx="7.2" ry="4.6" fill="#c9a24b" transform="rotate(28 32.5 19)"/>
+      <ellipse cx="16.5" cy="29.5" rx="6.2" ry="4" fill="#e8d9ae" transform="rotate(28 16.5 29.5)"/>
+      <ellipse cx="31.5" cy="29.5" rx="6.2" ry="4" fill="#e8d9ae" transform="rotate(-28 31.5 29.5)"/>
+      <circle cx="24" cy="24" r="3.8" fill="#fdfaf3" stroke="#c9a24b" stroke-width="1.2"/>
+    </svg>
+    Interno <b>63</b>
+  </a>
   <div class="nav-actions">
     <button class="cart-btn" id="cartBtn" type="button" aria-label="Apri carrello">🛍️ <span class="badge" id="cartCount"></span></button>
     <button class="menu-btn" id="menuBtn" type="button" aria-label="Apri menu di navigazione" aria-expanded="false" aria-controls="navMenu"><span></span><span></span></button>

@@ -7,13 +7,25 @@
 <meta name="description" content="Pannello di gestione Interno 63: articoli, categorie, vetrina, richieste d'ordine, dati del negozio e backup.">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#1d4a35">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='23' fill='%231d4a35'/%3E%3Cellipse cx='15.5' cy='19' rx='7.2' ry='4.6' fill='%23c9a24b' transform='rotate(-28 15.5 19)'/%3E%3Cellipse cx='32.5' cy='19' rx='7.2' ry='4.6' fill='%23c9a24b' transform='rotate(28 32.5 19)'/%3E%3Cellipse cx='16.5' cy='29.5' rx='6.2' ry='4' fill='%23e8d9ae' transform='rotate(28 16.5 29.5)'/%3E%3Cellipse cx='31.5' cy='29.5' rx='6.2' ry='4' fill='%23e8d9ae' transform='rotate(-28 31.5 29.5)'/%3E%3Ccircle cx='24' cy='24' r='4' fill='%23fdfaf3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="pag-admin">
 
 <!-- HEADER ADMIN -->
 <header class="admin-head">
-  <a class="brand" href="index.html"><span class="dot"></span> Interno <b>63</b> <span class="admin-tag">Admin</span></a>
+  <a class="brand" href="index.html" aria-label="Interno 63 — torna al negozio">
+    <svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="22.5" fill="#1d4a35"/>
+      <circle cx="24" cy="24" r="21.2" fill="none" stroke="#c9a24b" stroke-width="1.6"/>
+      <ellipse cx="15.5" cy="19" rx="7.2" ry="4.6" fill="#c9a24b" transform="rotate(-28 15.5 19)"/>
+      <ellipse cx="32.5" cy="19" rx="7.2" ry="4.6" fill="#c9a24b" transform="rotate(28 32.5 19)"/>
+      <ellipse cx="16.5" cy="29.5" rx="6.2" ry="4" fill="#e8d9ae" transform="rotate(28 16.5 29.5)"/>
+      <ellipse cx="31.5" cy="29.5" rx="6.2" ry="4" fill="#e8d9ae" transform="rotate(-28 31.5 29.5)"/>
+      <circle cx="24" cy="24" r="3.8" fill="#fdfaf3" stroke="#c9a24b" stroke-width="1.2"/>
+    </svg>
+    Interno <b>63</b> <span class="admin-tag">Admin</span>
+  </a>
   <div class="admin-head-actions">
     <a class="btn btn-ghost" href="index.html">← Torna al negozio</a>
     <button class="btn" type="button" id="adminLogout" hidden>Esci</button>
