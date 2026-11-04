@@ -6,6 +6,14 @@
 <title>Interno 63 — Bomboniere, Articoli Regalo e Servizi Matrimonio</title>
 <meta name="description" content="Interno 63: bomboniere artigianali, cofanetti regalo e servizi completi per matrimoni, battesimi e cerimonie. Personalizzazione con nomi e data, spedizione in tutta Italia.">
 <meta name="theme-color" content="#1d4a35">
+<!-- Condivisione social: anteprima corretta quando la pagina viene linkata su Facebook/WhatsApp -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Interno 63">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Interno 63 — Bomboniere, Articoli Regalo e Servizi Matrimonio">
+<meta property="og:description" content="Bomboniere artigianali, cofanetti regalo e servizi completi per cerimonie, fatti a mano a Monopoli. Seguici anche sulla pagina Facebook del negozio.">
+<meta property="og:url" content="https://interno63.vercel.app/">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="home">
@@ -92,6 +100,49 @@
       <a class="btn btn-ghost" href="shop.html">Sfoglia tutto il catalogo →</a>
     </div>
   </section>
+
+  <!-- SOCIAL: la pagina Facebook del negozio, raccontata con lo stile del sito.
+       Il formato "post" (icona + titolo breve + invito) è ripreso dalle tile delle categorie
+       per integrarsi nel design, senza widget esterni che appesantiscono la pagina. -->
+  <section class="section" id="social">
+    <div class="section-head reveal">
+      <span class="pill">Dalla pagina Facebook</span>
+      <h2>Il negozio, un post alla volta</h2>
+      <p>Pubblichiamo arrivi, allestimenti e lavori su misura: passa dalla pagina per vedere le foto complete, i prezzi dei pezzi unici e per scriverci in messaggio privato.</p>
+    </div>
+    <div class="wrap">
+      <div class="cats-grid reveal" role="group" aria-label="Argomenti della pagina Facebook del negozio">
+        <a class="tile" href="https://www.facebook.com/share/14xCco4QcLd/" target="_blank" rel="noopener">
+          <span class="tile-ico" aria-hidden="true">🎀</span>
+          <span class="tile-nome">Bomboniere appena arrivate</span>
+          <span class="tile-quota">Le foto complete sulla pagina</span>
+          <span class="tile-vai">Apri Facebook →</span>
+        </a>
+        <a class="tile" href="https://www.facebook.com/share/14xCco4QcLd/" target="_blank" rel="noopener">
+          <span class="tile-ico" aria-hidden="true">💍</span>
+          <span class="tile-nome">Allestimenti seguiti</span>
+          <span class="tile-quota">Matrimoni e cerimonie recenti</span>
+          <span class="tile-vai">Apri Facebook →</span>
+        </a>
+        <a class="tile" href="https://www.facebook.com/share/14xCco4QcLd/" target="_blank" rel="noopener">
+          <span class="tile-ico" aria-hidden="true">✨</span>
+          <span class="tile-nome">Lavori su misura</span>
+          <span class="tile-quota">Richieste e personalizzazioni</span>
+          <span class="tile-vai">Apri Facebook →</span>
+        </a>
+        <a class="tile" href="https://www.facebook.com/share/14xCco4QcLd/" target="_blank" rel="noopener">
+          <span class="tile-ico" aria-hidden="true">🍯</span>
+          <span class="tile-nome">Dalla bottega</span>
+          <span class="tile-quota">Confetti e prodotti del territorio</span>
+          <span class="tile-vai">Apri Facebook →</span>
+        </a>
+      </div>
+      <div class="cta-center reveal">
+        <a class="btn" href="https://www.facebook.com/share/14xCco4QcLd/" target="_blank" rel="noopener">Seguici su Facebook</a>
+        <a class="btn btn-ghost" href="#contatti">Oppure scrivici dal sito →</a>
+      </div>
+    </div>
+  </section>
 </main>
 
 <!-- FOOTER: riga contatti ricomposta da script.js con i dati salvati dall'admin -->
@@ -105,7 +156,7 @@
   <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Bomboniere, articoli regalo e servizi matrimonio<span id="footLuogo"> · Monopoli (BA)</span></p>
   <nav class="foot-links" aria-label="Link utili">
     <a class="link" href="shop.html">Catalogo</a>
-    <a class="link hidden" id="linkFb" href="#" rel="noopener">Facebook</a>
+    <a class="link hidden" id="linkFb" href="https://www.facebook.com/share/14xCco4QcLd/" rel="noopener">Facebook</a>
     <a class="link hidden" id="linkIg" href="#" rel="noopener">Instagram</a>
     <a class="link" href="admin.html">Area amministratore</a>
   </nav>
