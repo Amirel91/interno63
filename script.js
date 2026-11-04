@@ -1,4 +1,4 @@
-/* Interno 63 — storefront condiviso: index.html (vetrina + richiamo categorie) + shop.html (catalogo).
+/* Interno 63 — storefront condiviso: index.html (vetrina + categorie in primo piano) + shop.html (catalogo).
    Categorie, catalogo e dati negozio arrivano dall'admin attraverso il localStorage condiviso. */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
@@ -82,24 +82,31 @@ function toast(messaggio) {
 /* ---------- Menu mobile (hamburger) + drop-down categorie ---------- */
 const selMenu = () => $('#navMenu') || document.querySelector('.nav-menu');
 const selBtnMenu = () => $('#menuBtn') || document.querySelector('.menu-btn');
-/* il pulsante che apre il drop-down può avere id/classi diversi: cerco tutti gli alias */
-const selBtnDrop = () => document.querySelector('#dropBtn, #dropToggle, .drop-btn, .drop-toggle, [data-toggle-drop]');
+/* il pulsante del drop-down nel markup si chiama #navDropBtn (alias di riserva inclusi) */
+const selBtnDrop = () => document.querySelector('#navDropBtn, .nav-drop-btn, .nav-drop > button');
 
+/* apre/chiude SOLO via aria-expanded + classe .aperta: mai [hidden] sul menu,
+   così l'elenco resta visibile nel pannello mobile e diventa tenda al passaggio in desktop */
 function chiudiDrop() {
-  const drop = $('#dropCategorie');
+  const menu = $('#navDropMenu');
+  const contenitore = $('#navDrop');
   const btn = selBtnDrop();
-  if (!btn) return; /* nessun pulsante: elenco sempre visibile, niente da chiudere */
-  if (drop) drop.hidden = true;
-  btn.setAttribute('aria-expanded', 'false');
+  if (menu) menu.classList.remove('aperta');
+  if (contenitore) contenitore.classList.remove('aperta');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
 }
 
 function toggleDrop() {
-  const drop = $('#dropCategorie');
+  const menu = $('#navDropMenu');
+  const contenitore = $('#navDrop');
   const btn = selBtnDrop();
-  if (!drop || !btn) return;
-  const aperto = drop.hidden;
-  drop.hidden = !aperto;
-  btn.setAttribute('aria-expanded', String(aperto));
+  if (!btn || !menu) return;
+  const aperto = btn.getAttribute('aria-expanded') === 'true';
+  chiudiDrop();
+  if (aperto) return;
+  btn.setAttribute('aria-expanded', 'true');
+  menu.classList.add('aperta');
+  if (contenitore) contenitore.classList.add('aperta');
 }
 
 function chiudiMenu() {
@@ -178,7 +185,7 @@ function renderChips() {
   }).join('');
 }
 
-/* Drop-down categorie dentro il menu in alto a destra: voci dinamiche dall'admin */
+/* Drop-down "Catalogo" nel menu in alto: voci dinamiche dall'admin */
 function renderDropCategorie() {
   const box = $('#dropCategorie');
   if (!box) return;
@@ -187,23 +194,24 @@ function renderDropCategorie() {
     .map(c => `<a href="shop.html?cat=${encodeURIComponent(c.id)}"><span class="drop-ico" aria-hidden="true">${esc(c.icona || '✿')}</span>${esc(c.nome || 'Categoria')}</a>`)
     .join('');
   box.innerHTML = `<a href="shop.html">Tutti gli articoli</a>${voci}`;
-  /* se esiste il pulsante di apertura, il drop-down parte chiuso */
-  if (selBtnDrop()) box.hidden = true;
+  chiudiDrop(); /* parte chiuso, senza toccare la visibilità dell'elenco in mobile */
 }
 
-/* Tile "Compra per categoria" della homepage: dinamiche, con conteggio articoli */
+/* Tile "Compra per categoria" della homepage: in primo piano, con conteggio articoli */
 function renderTileCategorie() {
   const box = $('#catsGrid');
   if (!box) return; /* shop.html non ha le tile */
-  box.innerHTML = categorie.map(c => {
-    const n = catalogo.filter(p => p.categoria === c.id).length;
-    return `<a class="tile" href="shop.html?cat=${encodeURIComponent(c.id)}">
-      <span class="tile-ico" aria-hidden="true">${esc(c.icona || '✿')}</span>
-      <span class="tile-nome">${esc(c.nome || 'Categoria')}</span>
-      <span class="tile-quota">${n} ${n === 1 ? 'articolo' : 'articoli'}</span>
-      <span class="tile-vai" aria-hidden="true">Sfoglia →</span>
-    </a>`;
-  }).join('');
+  box.innerHTML = categorie
+    .filter(c => c && c.id)
+    .map(c => {
+      const n = catalogo.filter(p => p.categoria === c.id).length;
+      return `<a class="tile" href="shop.html?cat=${encodeURIComponent(c.id)}">
+        <span class="tile-ico" aria-hidden="true">${esc(c.icona || '✿')}</span>
+        <span class="tile-nome">${esc(c.nome || 'Categoria')}</span>
+        <span class="tile-quota">${n} ${n === 1 ? 'articolo' : 'articoli'}</span>
+        <span class="tile-vai" aria-hidden="true">Sfoglia →</span>
+      </a>`;
+    }).join('');
 }
 
 /* Ordinamento robusto: accetta più alias di valore dal select dello shop */
@@ -430,9 +438,11 @@ function gestisciAzione(btn) {
 /* ---------- Eventi ---------- */
 function collegaEventi() {
   document.addEventListener('click', e => {
-    /* apertura/rottura del drop-down categorie nel menu in alto */
-    const btnDrop = e.target.closest('#dropBtn, #dropToggle, .drop-btn, .drop-toggle, [data-toggle-drop]');
+    /* drop-down "Catalogo" nel menu in alto */
+    const btnDrop = e.target.closest('#navDropBtn, .nav-drop-btn');
     if (btnDrop) { toggleDrop(); return; }
+    /* clic fuori dal drop-down: lo chiudo */
+    if (!e.target.closest('#navDrop')) chiudiDrop();
 
     if (e.target.closest('.nav-menu a')) chiudiMenu();
 
@@ -448,7 +458,7 @@ function collegaEventi() {
   su('#cartClose', 'click', chiudiTutto);
   su('#modalClose', 'click', chiudiTutto);
   su('#scrim', 'click', chiudiTutto);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') chiudiTutto(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { chiudiDrop(); chiudiTutto(); } });
 
   /* Solo pagina shop: ricerca e ordinamento */
   su('#cerca', 'input', e => { testoRicerca = e.target.value; renderCatalogo(); });
