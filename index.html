@@ -94,14 +94,16 @@
   </section>
 </main>
 
-<!-- FOOTER compatto con contatti -->
+<!-- FOOTER compatto con contatti: la riga contatti viene ricomposta da script.js
+     con i dati salvati dall'admin (il testo statico è solo fallback senza JS) -->
 <footer class="foot" id="contatti">
-  <p class="foot-contatti">
-    Via Roma 63, 70043 Monopoli (BA) ·
-    <a class="foot-tel" href="tel:+393512345678" id="cPhoneLink"><span id="cPhone">351 234 5678</span></a> ·
+  <p class="foot-contatti" id="footContatti">
+    <span>Via Roma 63, 70043 Monopoli (BA)</span> ·
+    <a class="foot-tel" href="tel:+393512345678">351 234 5678</a> ·
     <a class="foot-tel" href="mailto:info@interno63.it">info@interno63.it</a>
   </p>
-  <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Bomboniere, articoli regalo e servizi matrimonio · Monopoli (BA)</p>
+  <p class="foot-contatti" id="footOrari" hidden>🕒 Orari: Lun–Sab 9:30–13:00</p>
+  <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Bomboniere, articoli regalo e servizi matrimonio<span id="footLuogo"> · Monopoli (BA)</span></p>
   <nav class="foot-links" aria-label="Link utili">
     <a class="link" href="shop.html">Catalogo</a>
     <a class="link" href="admin.html">Area amministratore</a>

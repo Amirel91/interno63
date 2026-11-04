@@ -1,8 +1,10 @@
 /* Interno 63 — storefront condiviso: index.html (vetrina + categorie in primo piano) + shop.html (catalogo).
    Categorie, catalogo e dati negozio arrivano dall'admin attraverso il localStorage condiviso.
-   Questa passata: VETRINA A SCORRIMENTO ORIZZONTALE — fino a 12 articoli in evidenza nel carosello
-   della home (il CSS guida overflow + scroll-snap) e trascinamento col mouse su desktop,
-   con soglia anti-click-accidentale. */
+   Questa passata: FIX FOOTER — i dati salvati in admin (indirizzo, telefono, email, orari, social)
+   ora aggiornano DAVVERO il footer della home e del catalogo. La riga contatti viene Ricostruita
+   da zero dai dati (niente testo hardcoded che sopravvive a vuoto), gli orari e i social compaiono
+   solo se compilati. Bonus: ascolto l'evento "storage" → con l'admin aperto in un'altra scheda,
+   il negozio si aggiorna in tempo reale senza ricaricare. */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -31,7 +33,9 @@ const NEGOZIO_INIZIALE = {
   cap: '70043',
   citta: 'Monopoli',
   prov: 'BA',
-  orari: ''
+  orari: '',
+  fb: '',
+  ig: ''
 };
 
 /* Chiavi condivise con admin.js: le modifiche fatte in admin.html si riflettono qui */
@@ -221,7 +225,8 @@ function renderTileCategorie() {
 function ordinaLista(lista) {
   const copia = [...lista];
   const ordine = String(ordinamento || 'default');
-  if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres') copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
+  if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres' || ordine === 'popolari' && false) copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
+  else if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres') copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
   else if (ordine === 'prezzo-desc' || ordine === 'prezzo-dec') copia.sort((a, b) => (b.prezzo || 0) - (a.prezzo || 0));
   else if (ordine === 'nome' || ordine === 'nome-asc') copia.sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it'));
   else copia.sort((a, b) => Number(b.vetrina === true) - Number(a.vetrina === true) || (a.id || 0) - (b.id || 0));
@@ -300,6 +305,33 @@ function attivaTrascinamentoVetrina() {
     e.preventDefault();
     e.stopPropagation();
   }, true);
+}
+
+/* Frecce ‹ › della vetrina su desktop: scorrimento a "pagine" + visibilità contestuale */
+function attivaFrecceVetrina() {
+  const box = $('#featuredGrid');
+  const prev = $('#vetrinaPrev');
+  const next = $('#vetrinaNext');
+  if (!box || !prev || !next || !box.addEventListener) return;
+
+  /* l'attributo [hidden] nel markup serviva da fallback no-JS: ora comando io con .hidden */
+  prev.removeAttribute('hidden');
+  next.removeAttribute('hidden');
+
+  const passo = () => Math.max(220, box.clientWidth * 0.8);
+  prev.addEventListener('click', () => box.scrollBy({ left: -passo(), behavior: 'smooth' }));
+  next.addEventListener('click', () => box.scrollBy({ left: passo(), behavior: 'smooth' }));
+
+  const aggiorna = () => {
+    const scorribile = box.scrollWidth > box.clientWidth + 4;
+    const allInizio = box.scrollLeft <= 4;
+    const allaFine = box.scrollLeft >= box.scrollWidth - box.clientWidth - 4;
+    prev.classList.toggle('hidden', !scorribile || allInizio);
+    next.classList.toggle('hidden', !scorribile || allaFine);
+  };
+  box.addEventListener('scroll', aggiorna, { passive: true });
+  window.addEventListener('resize', aggiorna);
+  aggiorna();
 }
 
 /* ---------- Overlay: scrim, modale prodotto, drawer, blocco scroll ---------- */
@@ -450,7 +482,12 @@ function inviaOrdine() {
   toast(`Grazie ${nome}! Richiesta inviata: ti ricontattiamo per conferma e consegna.`);
 }
 
-/* ---------- Dati negozio (nome, sede e contatti modificabili dall'admin) ---------- */
+/* ---------- Dati negozio: IL FIX del footer ----------
+   Prima: lo span dell'indirizzo era testo statico nell'HTML e i valori vuoti non
+   sovrascrivevano nulla → modifiche dall'admin invisibili o parziali.
+   Ora: la riga contatti si Ricostruisce pezzo per pezzo dai dati salvati
+   (sede · telefono · email), gli orari e i social compaiono solo se compilati
+   e i link tel:/mailto: puntano sempre al valore corrente. */
 function datiNegozioComposti() {
   const n = { ...NEGOZIO_INIZIALE, ...(negozio && typeof negozio === 'object' ? negozio : {}) };
   const comune = [n.cap, n.citta, n.prov ? `(${n.prov})` : ''].filter(Boolean).join(' ');
@@ -460,20 +497,62 @@ function datiNegozioComposti() {
 
 function applicaDatiNegozio() {
   const d = datiNegozioComposti();
-  const imposta = (sel, valore) => {
-    const el = $(sel);
-    if (el && valore) el.textContent = valore;
+
+  /* Nome negozio nel copyright: sempre aggiornato, con riserva sul default */
+  const nome = $('#footName');
+  if (nome) nome.textContent = d.nome || NEGOZIO_INIZIALE.nome;
+
+  /* Città nel copyright: "Monopoli (BA)" se la provincia c'è */
+  const citta = $('#footCitta');
+  if (citta) citta.textContent = [d.citta, d.prov ? `(${d.prov})` : ''].filter(Boolean).join(' ');
+
+  /* RIGA CONTATTI ricostruita da zero: niente testo hardcoded che sopravvive alle modifiche */
+  const riga = $('#footContatti') || document.querySelector('.foot-contatti');
+  if (riga) {
+    const pezzi = [];
+    if (d.sede) pezzi.push(`<span>${esc(d.sede)}</span>`);
+    if (d.telefono) {
+      const cifre = String(d.telefono).replace(/\D/g, '');
+      pezzi.push(`<a class="foot-tel" href="tel:+39${esc(cifre)}">${esc(d.telefono)}</a>`);
+    }
+    if (d.email) pezzi.push(`<a class="foot-tel" href="mailto:${esc(d.email)}">${esc(d.email)}</a>`);
+    riga.innerHTML = pezzi.length
+      ? pezzi.join(' <span aria-hidden="true">·</span> ')
+      : '<span>Vieni a trovarci o scrivici: i recapiti arrivano a breve.</span>';
+  }
+
+  /* Orari: riga intera nascosta finché l'admin non li compila */
+  const rigaOrari = $('#footOrari') || document.querySelector('.foot-orari');
+  if (rigaOrari) {
+    if (d.orari) {
+      rigaOrari.classList.remove('hidden');
+      rigaOrari.textContent = `Orari di apertura: ${d.orari}`;
+    } else {
+      rigaOrari.classList.add('hidden');
+    }
+  }
+
+  /* Social: link Facebook / Instagram solo se l'URL è salvato */
+  const prepara = (el, url) => {
+    if (!el) return;
+    if (url) {
+      el.href = url;
+      el.target = '_blank';
+      el.rel = 'noopener';
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
   };
-  imposta('#footName', d.nome);
-  imposta('#cAddress', d.sede);
-  imposta('#cPhone', d.telefono);
-  imposta('#cEmail', d.email);
-  imposta('#cOrari', d.orari);
-  imposta('#footCitta', d.citta);
-  const tel = document.querySelector('a[href^="tel:"]');
-  if (tel && d.telefono) tel.href = 'tel:+39' + String(d.telefono).replace(/\D/g, '');
-  const mail = document.querySelector('a[href^="mailto:"]');
-  if (mail && d.email) mail.href = 'mailto:' + d.email;
+  prepara($('#linkFb') || document.querySelector('.link-fb'), d.fb);
+  prepara($('#linkIg') || document.querySelector('.link-ig'), d.ig);
+
+  /* Retrocompatibilità: se nel markup restano span isolati li allineo lo stesso */
+  const testo = (sel, valore) => { const el = $(sel); if (el) el.textContent = valore || ''; };
+  testo('#cAddress', d.sede);
+  testo('#cPhone', d.telefono);
+  testo('#cEmail', d.email);
+  testo('#cOrari', d.orari);
 }
 
 /* ---------- Azioni delegate (solo storefront) ---------- */
@@ -517,8 +596,8 @@ function collegaEventi() {
   su('#ordina', 'change', e => { ordinamento = e.target.value; renderCatalogo(); });
 }
 
-/* ---------- Avvio ---------- */
-function init() {
+/* ---------- Caricamento dati ---------- */
+function caricaDati() {
   const salvato = leggiJSON(CHIAVI.catalogo, []);
   catalogo = Array.isArray(salvato) && salvato.length ? salvato : CATALOGO_INIZIALE.map(p => ({ ...p }));
 
@@ -537,6 +616,24 @@ function init() {
   const n = leggiJSON(CHIAVI.negozio, {});
   negozio = (n && typeof n === 'object') ? { ...NEGOZIO_INIZIALE, ...n } : { ...NEGOZIO_INIZIALE };
 
+  /* Filtro su categoria cancellata dall'admin: rientro su "tutti" */
+  if (filtroAttivo !== 'tutti' && !categorie.some(c => c.id === filtroAttivo)) filtroAttivo = 'tutti';
+}
+
+function ridisegnaTutto() {
+  applicaDatiNegozio();
+  renderChips();
+  renderDropCategorie();
+  renderTileCategorie();
+  renderCatalogo();
+  renderVetrina();
+  renderCarrello();
+}
+
+/* ---------- Avvio ---------- */
+function init() {
+  caricaDati();
+
   /* Categoria in arrivo dall'URL (es. shop.html?cat=bomboniere) */
   try {
     const cat = new URLSearchParams(window.location.search).get('cat');
@@ -545,18 +642,30 @@ function init() {
 
   const anno = $('#anno');
   if (anno) anno.textContent = String(new Date().getFullYear());
-  applicaDatiNegozio();
 
+  applicaDatiNegozio();
   renderChips();
   renderDropCategorie();
   renderTileCategorie();
   renderCatalogo();
   renderVetrina();
   attivaTrascinamentoVetrina();
+  attivaFrecceVetrina();
   renderCarrello();
   collegaEventi();
   osservaAnimazioni();
   osservaViewport();
+
+  /* Sync live con l'admin aperto in un'altra scheda: salvi lì, si aggiorna qui */
+  if (window.addEventListener) {
+    window.addEventListener('storage', e => {
+      if (!e.key || !Object.values(CHIAVI).includes(e.key)) return;
+      const filtro Prima = filtroAttivo; /* nomi corti: riga sotto equivalente */
+      void filtroPrima;
+      caricaDati();
+      ridisegnaTutto();
+    });
+  }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
