@@ -1,7 +1,8 @@
 /* Interno 63 — foglio di stile unico: storefront (home + catalogo) e pannello admin.
    Linguaggio "bottega editoriale": fondo carta, filetti sottili, serif di testa, ottone.
    FIX CHIAVE: [hidden] vince sempre su qualsiasi display dichiarato → niente overlay
-   invisibili (modale, scrim, drop-down) che si mangiano i click di tutta la pagina. */
+   invisibili (modale, scrim, drop-down) che si mangiano i click di tutta la pagina.
+   Passata desktop: nav orizzontale, drop-down flottante, drawer laterale, admin a due colonne. */
 
 :root{
   --bg:#f6f1e7;
@@ -40,6 +41,7 @@ body.blocco-scroll{overflow:hidden}
 img{max-width:100%;display:block}
 button{font:inherit;cursor:pointer}
 a{color:inherit}
+:focus-visible{outline:2px solid var(--oro);outline-offset:2px;border-radius:4px}
 h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.12;letter-spacing:-.01em}
 h1 em,h2 em{font-style:italic;color:var(--accente)}
 .hidden{display:none!important}
@@ -421,133 +423,201 @@ body.pag-admin{background:var(--bg);background-image:none}
 }
 .admin-head-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 .admin-head .btn-ghost{border-color:var(--oro-tenue);color:var(--oro-tenue);box-shadow:none}
-.admin-head .btn-ghost:hover{background:var(--oro-tenue);color:var(--accente-scuro)}
+.admin-head .btn-ghost:hover{background:var(--oro-tenue);color:var(--accente-scuro);border-color:var(--oro-tenue)}
 
-/* Accesso */
+/* ---------- Accesso (gate) ---------- */
 .gate-wrap{
-  max-width:430px;margin:2.5rem auto;padding:1.9rem 1.5rem;background:var(--carta);
-  border:1px solid var(--bordo);border-radius:var(--raggio);text-align:center;box-shadow:var(--ombra);
+  max-width:440px;margin:clamp(2rem,7vw,4.5rem) auto;padding:0 1rem;
+  text-align:center;display:grid;gap:.9rem;justify-items:center;
 }
-.gate-ico{font-size:2.2rem;display:block;margin-bottom:.4rem}
-.gate-wrap h1{font-size:1.5rem}
-.gate-wrap .hint{margin:.45rem 0 1.3rem}
-.gate{display:grid;gap:.6rem;text-align:left}
-.gate label{font-size:.84rem;font-weight:700;color:var(--testo)}
-.gate input{padding:.72rem .9rem;border:1px solid var(--bordo);border-radius:12px;font:inherit;background:#fff}
+.gate-ico{font-size:2.4rem;filter:drop-shadow(0 4px 8px rgba(36,43,34,.18))}
+.gate-wrap h1{font-size:1.7rem}
+.gate-wrap .hint{max-width:36ch}
+.gate{
+  width:100%;display:grid;gap:.6rem;text-align:left;
+  background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio);
+  padding:1.25rem;box-shadow:var(--ombra);
+}
+.gate label{font-size:.8rem;font-weight:700}
+.gate input{
+  padding:.68rem .85rem;border:1px solid var(--bordo);border-radius:12px;
+  font:inherit;font-size:.95rem;background:var(--bg);
+}
 .gate input:focus{border-color:var(--accente);outline:none}
-.gate .btn{margin-top:.3rem}
-.gate-msg{color:var(--pericolo);font-size:.84rem;font-weight:600}
+.gate .btn{width:100%}
+.gate-msg{color:var(--pericolo);font-size:.85rem;font-weight:600}
 
-/* Dashboard */
-.admin-shell{max-width:1160px;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 3rem}
-.admin-stats{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:1.6rem}
+/* ---------- Shell, statistiche, tab ---------- */
+.admin-shell{
+  max-width:1240px;margin:0 auto;width:100%;
+  padding:clamp(1.1rem,3.5vw,1.8rem) clamp(1rem,4vw,2rem) 3rem;
+  display:grid;gap:1.15rem;
+}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.7rem}
 .admin-stat{
-  background:var(--carta);border:1px solid var(--bordo);border-radius:14px;
-  padding:1rem 1.1rem;display:grid;gap:.15rem;
+  background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio);
+  padding:.9rem 1rem;display:grid;gap:.1rem;
 }
-.admin-stat b{font-family:var(--font-display);font-size:1.45rem;color:var(--accente)}
-.admin-stat span{font-size:.74rem;color:var(--testo-2);letter-spacing:.03em}
-
-/* Schede del pannello */
-.tabs{
-  display:flex;gap:.35rem;flex-wrap:wrap;background:var(--carta);
-  border:1px solid var(--bordo);border-radius:999px;padding:.35rem;margin-bottom:.2rem;
-}
+.admin-stat b{font-family:var(--font-display);font-size:1.42rem;color:var(--accente);line-height:1.15}
+.admin-stat span{font-size:.73rem;color:var(--testo-2);font-weight:600}
+.tabs{display:flex;flex-wrap:wrap;gap:.45rem}
 .tab{
-  border:none;background:none;border-radius:999px;padding:.55rem 1.05rem;
-  font-size:.88rem;font-weight:700;color:var(--testo-2);
-  transition:background var(--transizione),color var(--transizione);
+  display:inline-flex;align-items:center;gap:.45rem;
+  border:1px solid var(--bordo);background:var(--carta);color:var(--testo-2);
+  border-radius:999px;padding:.55rem 1.05rem;font-size:.88rem;font-weight:700;
+  transition:background var(--transizione),color var(--transizione),border-color var(--transizione);
 }
-.tab:hover{color:var(--accente)}
-.tab.attiva{background:var(--accente);color:#fdfaf1}
+.tab:hover{border-color:var(--accente);color:var(--accente)}
+.tab.attiva{background:var(--accente);border-color:var(--accente);color:#fdfaf1}
 .cont-badge{
   background:var(--oro-tenue);color:var(--accente-scuro);border-radius:999px;
-  min-width:20px;height:20px;padding:0 5px;font-size:.68rem;font-weight:800;
-  display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-testo);
+  padding:.06rem .5rem;font-size:.7rem;font-weight:800;font-family:var(--font-testo);
 }
-.tab.attiva .cont-badge{background:rgba(253,250,241,.25);color:#fdfaf1}
-.tabpane{display:grid;gap:1.2rem}
+.tab.attiva .cont-badge{background:var(--oro);color:var(--accente-scuro)}
+.tabpane{display:grid;gap:1.1rem;align-content:start}
 
-/* Schede di modifica */
+/* ---------- Schede di modifica e form ---------- */
 .edit-card{
   background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio);
-  padding:1.4rem;display:grid;gap:1rem;
+  padding:clamp(1rem,3vw,1.5rem);display:grid;gap:1rem;box-shadow:var(--ombra);
 }
 .edit-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .edit-head h2{font-size:1.25rem}
-.edit-grid{display:grid;gap:1.4rem}
-@media (min-width:1024px){
-  .edit-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);align-items:start}
-}
-
-/* Form (condiviso da articoli, categorie e dati negozio) */
-.form-grid{display:grid;gap:1rem}
-@media (min-width:640px){.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.form-grid label{display:grid;gap:.35rem;font-size:.84rem;font-weight:700;color:var(--testo)}
-.form-grid .wide{grid-column:1/-1}
-.form-grid input,.form-grid select{
+.edit-grid{display:grid;gap:1.2rem;align-items:start}
+.form-grid{display:grid;gap:.9rem}
+.form-grid label{display:grid;gap:.35rem;font-size:.8rem;font-weight:700;color:var(--testo)}
+.form-grid label .hint{font-weight:500}
+.form-grid input:not([type=checkbox]):not([type=file]),
+.form-grid select{
   padding:.62rem .8rem;border:1px solid var(--bordo);border-radius:12px;
-  font:inherit;font-size:.92rem;background:#fff;color:var(--testo);width:100%;
+  background:var(--carta);font:inherit;font-size:.95rem;color:var(--testo);
+  transition:border-color var(--transizione);
 }
-.form-grid input:focus,.form-grid select:focus{
-  border-color:var(--accente);outline:none;box-shadow:0 0 0 3px rgba(29,74,53,.08);
-}
-.form-grid input[type="file"]{padding:.45rem;font-size:.82rem;background:var(--carta)}
-.form-grid .check{display:flex;align-items:center;gap:.55rem;font-weight:600;cursor:pointer}
+.form-grid input:not([type=checkbox]):not([type=file]):focus,
+.form-grid select:focus{border-color:var(--accente);outline:none}
+.form-grid input[type=file]{font-size:.82rem;color:var(--testo-2)}
+.form-grid .check{display:flex;align-items:center;gap:.55rem;font-weight:600;font-size:.9rem;color:var(--testo)}
 .form-grid .check input{width:18px;height:18px;accent-color:var(--accente)}
-.form-aiuto{font-size:.82rem;color:var(--testo-2);grid-column:1/-1}
+.form-aiuto{font-size:.82rem;color:var(--testo-2)}
 
-/* Anteprima live */
+/* ---------- Anteprima live ---------- */
 .anteprima{
-  background:var(--bg);border:1px dashed var(--bordo-forte);border-radius:14px;
-  padding:1.1rem;display:grid;gap:.6rem;align-content:start;
+  background:var(--bg);border:1px dashed var(--bordo-forte);border-radius:var(--raggio);
+  padding:1rem;display:grid;gap:.65rem;justify-items:center;align-content:start;
 }
 .anteprima-tit{
-  font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--testo-2);
+  font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--testo-2);
 }
-.anteprima .product{width:100%;box-shadow:none}
-.anteprima .product:hover{transform:none;box-shadow:none}
+.anteprima .product{width:100%;max-width:280px;pointer-events:none;box-shadow:var(--ombra)}
+.anteprima .product button{pointer-events:none}
 
-/* Barra filtri sopra le tabelle */
-.filtri-bar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
-.cerca-mini{max-width:340px;flex:1}
-
-/* Tabelle dati */
-.table-wrap{overflow-x:auto;background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio)}
-.tabella{width:100%;border-collapse:collapse;font-size:.9rem;min-width:640px}
+/* ---------- Barra filtri e tabelle ---------- */
+.filtri-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem}
+.cerca-mini{max-width:300px;padding:.4rem .85rem;flex:0 1 auto}
+.filtri-bar .conteggio{margin-left:auto}
+.table-wrap{
+  overflow-x:auto;background:var(--carta);border:1px solid var(--bordo);
+  border-radius:var(--raggio);
+}
+.tabella{width:100%;border-collapse:collapse;font-size:.9rem}
+.table-wrap .tabella{min-width:720px}
 .tabella th{
-  text-align:left;font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--testo-2);padding:.8rem .9rem;border-bottom:2px solid var(--bordo-forte);
+  text-align:left;font-family:var(--font-testo);font-size:.7rem;font-weight:800;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--testo-2);
+  padding:.85rem .9rem;border-bottom:2px solid var(--bordo-forte);white-space:nowrap;
 }
-.tabella td{padding:.75rem .9rem;border-bottom:1px solid var(--bordo);vertical-align:top}
+.tabella td{padding:.8rem .9rem;border-bottom:1px solid var(--bordo);vertical-align:top}
 .tabella tr:last-child td{border-bottom:none}
-.tabella tbody tr:hover td{background:rgba(29,74,53,.03)}
 .tabella .azioni{display:flex;gap:.4rem;flex-wrap:wrap}
-#ordiniBox{overflow-x:auto;background:var(--carta);border:1px solid var(--bordo);border-radius:var(--raggio)}
+#ordiniBox{
+  overflow-x:auto;background:var(--carta);border:1px solid var(--bordo);
+  border-radius:var(--raggio);padding:.4rem;
+}
+#ordiniBox .tabella{min-width:640px}
 
-/* Selettore icone categoria */
+/* Icone categoria */
 .icon-picker{display:flex;flex-wrap:wrap;gap:.4rem}
 .icona-btn{
   width:42px;height:42px;border-radius:12px;border:1px solid var(--bordo);
-  background:var(--carta);font-size:1.15rem;display:grid;place-items:center;
-  transition:border-color var(--transizione),background var(--transizione),transform var(--transizione);
+  background:var(--bg);font-size:1.15rem;display:grid;place-items:center;
+  transition:border-color var(--transizione),background var(--transizione);
 }
-.icona-btn:hover{border-color:var(--accente);transform:translateY(-1px)}
-.icona-btn.selezionata{background:var(--oro-tenue);border-color:var(--oro)}
+.icona-btn:hover{border-color:var(--accente)}
+.icona-btn.selezionata{background:var(--oro-tenue);border-color:var(--oro);box-shadow:var(--ombra)}
 
 /* Backup */
-.backup-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-.backup-grid .edit-card h2{font-size:1.15rem}
-.backup-azioni{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem}
-.backup-grid input[type="file"]{
-  padding:.5rem;border:1px dashed var(--bordo-forte);border-radius:12px;
-  font-size:.84rem;background:var(--bg);width:100%;
+.backup-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));align-items:start}
+.backup-grid h2{font-size:1.12rem}
+.backup-grid input[type=file]{
+  width:100%;font-size:.82rem;color:var(--testo-2);padding:.5rem 0;
 }
+.backup-azioni{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem}
 .box-info{
-  background:var(--carta);border:1px solid var(--bordo);border-left:3px solid var(--oro);
-  border-radius:12px;padding:1rem 1.1rem;margin-top:1.2rem;
+  border:1px solid var(--bordo);border-radius:var(--raggio);
+  padding:1rem 1.1rem;background:var(--carta);color:var(--testo-2);
+}
+.pag-admin .foot{padding:1.4rem 1rem 1.2rem}
+
+/* ============================================================
+   DESKTOP ≥768px — menu orizzontale, drop-down flottante,
+   form a due colonne, statistiche allineate
+   ============================================================ */
+@media (min-width:768px){
+  .menu-btn{display:none}
+  .nav-menu{
+    display:flex;width:auto;order:2;flex-direction:row;align-items:center;
+    gap:.15rem;margin-left:auto;padding:0;
+  }
+  .nav-menu > a,.nav-drop-btn{width:auto;padding:.55rem .8rem;font-size:.95rem;border-radius:10px}
+  .nav-actions{order:3;margin-left:.7rem}
+  .cart-btn{padding:.55rem .95rem}
+
+  /* Drop-down categorie: pannello flottante sotto la voce "Catalogo".
+     Si apre al click (l'JS toglie [hidden] all'elenco): il wrapper compare
+     solo quando l'elenco interno non è hidden (:has, base 2023). */
+  .nav-drop{position:relative}
+  .nav-drop-menu{
+    display:none;position:absolute;top:calc(100% + .55rem);right:0;z-index:80;
+    min-width:265px;background:var(--carta);border:1px solid var(--bordo-forte);
+    border-radius:16px;box-shadow:var(--ombra-alta);padding:.55rem;
+  }
+  .nav-drop-menu:has(.nav-drop-inner:not([hidden])){display:block}
+  .nav-drop-inner{border-left:none;padding:0;margin:0;gap:.05rem}
+  .nav-drop-inner a{padding:.6rem .7rem;font-size:.92rem;color:var(--testo)}
+  .nav-drop-inner a:hover{background:var(--bg);color:var(--accente)}
+
+  /* Form admin a due colonne, campo largo su tutta la riga */
+  .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form-grid .wide{grid-column:1/-1}
+
+  /* Statistiche admin: una riga compatta quando c'è spazio */
+  .admin-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+  .filtri-bar .campo-ordina select{padding:.45rem .9rem}
+  .hero-stats{gap:2.6rem}
 }
 
-/* Footer admin */
-.pag-admin .foot{border-top:3px solid var(--oro)}
+/* ---------- ≥900px: carrello come pannello laterale destro ---------- */
+@media (min-width:900px){
+  .drawer{
+    left:auto;right:0;top:0;bottom:0;width:min(420px,92vw);max-height:none;
+    height:100%;border-radius:0;transform:translateX(105%);
+  }
+  .drawer.aperta{transform:translateX(0)}
+  .drawer-head{border-bottom:1px solid var(--bordo)}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .cats-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+}
+
+/* ---------- ≥1024px: anteprima sticky affiancata al form ---------- */
+@media (min-width:1024px){
+  .edit-grid{grid-template-columns:minmax(0,1fr) 320px;gap:1.4rem}
+  .edit-grid .anteprima{position:sticky;top:5.5rem}
+  .admin-stats{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .hero{padding:5.5rem 0 4.6rem}
+  .hero-inner{gap:1.25rem}
+  .section{padding:4.2rem 0}
+  .backup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .toolbar{gap:1rem}
+  .campo-cerca{max-width:460px}
+}
