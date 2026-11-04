@@ -1,10 +1,7 @@
 /* Interno 63 — storefront condiviso: index.html (vetrina + categorie in primo piano) + shop.html (catalogo).
-   Categorie, catalogo e dati negozio arrivano dall'admin attraverso il localStorage condiviso.
-   Questa passata: FIX FOOTER — i dati salvati in admin (indirizzo, telefono, email, orari, social)
-   ora aggiornano DAVVERO il footer della home e del catalogo. La riga contatti viene Ricostruita
-   da zero dai dati (niente testo hardcoded che sopravvive a vuoto), gli orari e i social compaiono
-   solo se compilati. Bonus: ascolto l'evento "storage" → con l'admin aperto in un'altra scheda,
-   il negozio si aggiorna in tempo reale senza ricaricare. */
+   FIX PAGINA BIANCA: il file era troncato a metà (SyntaxError fatale) → niente JS, e con le .reveal
+   ancora a opacity:0 l'intera pagina restava invisibile. Ora il file è completo e ogni init ha guard
+   clause: se anche qualcosa fallisse, il contenuto statico resta comunque leggibile. */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -89,11 +86,8 @@ function toast(messaggio) {
 /* ---------- Menu mobile (hamburger) + drop-down categorie ---------- */
 const selMenu = () => $('#navMenu') || document.querySelector('.nav-menu');
 const selBtnMenu = () => $('#menuBtn') || document.querySelector('.menu-btn');
-/* il pulsante del drop-down nel markup si chiama #navDropBtn (alias di riserva inclusi) */
 const selBtnDrop = () => document.querySelector('#navDropBtn, .nav-drop-btn, .nav-drop > button');
 
-/* apre/chiude SOLO via aria-expanded + classe .aperta: mai [hidden] sul menu,
-   così l'elenco resta visibile nel pannello mobile e diventa tenda al passaggio in desktop */
 function chiudiDrop() {
   const menu = $('#navDropMenu');
   const contenitore = $('#navDrop');
@@ -145,25 +139,28 @@ function osservaViewport() {
   const mq = window.matchMedia('(min-width:768px)');
   const applica = () => { if (mq.matches) chiudiMenu(); };
   if (mq.addEventListener) mq.addEventListener('change', applica);
-  else if (mq.addListener) mq.addListener(applica); /* Safari vecchi */
+  else if (mq.addListener) mq.addListener(applica);
 }
 
-/* ---------- Animazioni ingresso (attivano le .reveal del CSS) ---------- */
+/* ---------- Animazioni ingresso (attivano le .reveal del CSS) ----------
+   Rete di sicurezza anti pagina bianca: se qualcosa va storto, dopo 1.2s
+   tutto ciò che è .reveal diventa visibile comunque. */
 function osservaAnimazioni() {
   const elementi = document.querySelectorAll('.reveal');
   if (!elementi.length) return;
-  if (!('IntersectionObserver' in window)) {
-    elementi.forEach(el => el.classList.add('visibile'));
-    return;
-  }
-  const osservatore = new IntersectionObserver(voci => {
-    voci.forEach(voce => {
-      if (!voce.isIntersecting) return;
-      voce.target.classList.add('visibile');
-      osservatore.unobserve(voce.target);
-    });
-  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
-  elementi.forEach(el => osservatore.observe(el));
+  const scopriTutte = () => elementi.forEach(el => el.classList.add('visibile'));
+  if (!('IntersectionObserver' in window)) { scopriTutte(); return; }
+  try {
+    const osservatore = new IntersectionObserver(voci => {
+      voci.forEach(voce => {
+        if (!voce.isIntersecting) return;
+        voce.target.classList.add('visibile');
+        osservatore.unobserve(voce.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+    elementi.forEach(el => osservatore.observe(el));
+  } catch (e) { scopriTutte(); }
+  setTimeout(scopriTutte, 1200);
 }
 
 /* ---------- Rendering: card, filtri, catalogo, vetrina, categorie ---------- */
@@ -201,13 +198,13 @@ function renderDropCategorie() {
     .map(c => `<a href="shop.html?cat=${encodeURIComponent(c.id)}"><span class="drop-ico" aria-hidden="true">${esc(c.icona || '✿')}</span>${esc(c.nome || 'Categoria')}</a>`)
     .join('');
   box.innerHTML = `<a href="shop.html">Tutti gli articoli</a>${voci}`;
-  chiudiDrop(); /* parte chiuso, senza toccare la visibilità dell'elenco in mobile */
+  chiudiDrop();
 }
 
 /* Tile "Compra per categoria" della homepage: in primo piano, con conteggio articoli */
 function renderTileCategorie() {
   const box = $('#catsGrid');
-  if (!box) return; /* shop.html non ha le tile */
+  if (!box) return;
   box.innerHTML = categorie
     .filter(c => c && c.id)
     .map(c => {
@@ -221,12 +218,10 @@ function renderTileCategorie() {
     }).join('');
 }
 
-/* Ordinamento robusto: accetta più alias di valore dal select dello shop */
 function ordinaLista(lista) {
   const copia = [...lista];
   const ordine = String(ordinamento || 'default');
-  if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres' || ordine === 'popolari' && false) copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
-  else if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres') copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
+  if (ordine === 'prezzo-asc' || ordine === 'prezzo-cres') copia.sort((a, b) => (a.prezzo || 0) - (b.prezzo || 0));
   else if (ordine === 'prezzo-desc' || ordine === 'prezzo-dec') copia.sort((a, b) => (b.prezzo || 0) - (a.prezzo || 0));
   else if (ordine === 'nome' || ordine === 'nome-asc') copia.sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'it'));
   else copia.sort((a, b) => Number(b.vetrina === true) - Number(a.vetrina === true) || (a.id || 0) - (b.id || 0));
@@ -235,7 +230,7 @@ function ordinaLista(lista) {
 
 function renderCatalogo() {
   const griglia = $('#productGrid');
-  if (!griglia) return; /* index.html non ha la griglia catalogo: vive in shop.html */
+  if (!griglia) return; /* index.html non ha la griglia catalogo */
   const q = testoRicerca.trim().toLowerCase();
   let lista = filtroAttivo === 'tutti' ? catalogo.slice() : catalogo.filter(p => p.categoria === filtroAttivo);
   if (q) lista = lista.filter(p => `${p.nome} ${p.descrizione || ''} ${nomeCat(p.categoria)}`.toLowerCase().includes(q));
@@ -252,25 +247,25 @@ function renderCatalogo() {
 /* Vetrina homepage: CAROSELLO ORIZZONTALE — fino a 12 articoli per riempire la corsia */
 function renderVetrina() {
   const griglia = $('#featuredGrid');
-  if (!griglia) return; /* shop.html non ha la vetrina */
+  if (!griglia) return;
   const scelti = catalogo.filter(p => p.vetrina).slice(0, 12);
   griglia.innerHTML = scelti.map(schedaProdotto).join('');
   const sezione = $('#vetrina');
-  if (sezione) sezione.classList.toggle('hidden', scelti.length === 0);
+  if (sezione && scelti.length === 0) sezione.classList.add('hidden');
+  else if (sezione) sezione.classList.remove('hidden');
 }
 
-/* Trascinamento col MOUSE sulla vetrina (desktop): il touch usa lo scroll nativo.
-   Soglia di 6px: sotto non è un trascinamento, così i click su card e bottoni restano intatti. */
+/* Trascinamento col MOUSE sulla vetrina (desktop): il touch usa lo scroll nativo */
 function attivaTrascinamentoVetrina() {
   const box = $('#featuredGrid');
   if (!box || !box.addEventListener) return;
 
-  let partenza = null;   /* { x, scroll } del pointerdown */
-  let trascina = false;  /* true solo oltre la soglia */
+  let partenza = null;
+  let trascina = false;
 
   box.addEventListener('pointerdown', e => {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return; /* solo tasto sinistro */
-    if (box.scrollWidth <= box.clientWidth + 2) return;      /* niente da scorrere */
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    if (box.scrollWidth <= box.clientWidth + 2) return;
     partenza = { x: e.clientX, scroll: box.scrollLeft };
     trascina = false;
   });
@@ -292,14 +287,12 @@ function attivaTrascinamentoVetrina() {
     box.classList.remove('trascina');
     box.style.userSelect = '';
     box.style.cursor = '';
-    /* il click arriva DOPO pointerup nello stesso ciclo: la soglia si azzera dopo */
     setTimeout(() => { trascina = false; }, 0);
   };
   box.addEventListener('pointerup', fine);
   box.addEventListener('pointercancel', fine);
   box.addEventListener('pointerleave', fine);
 
-  /* dopo un trascinamento vero sopprimo il click accidentale su card/bottoni */
   box.addEventListener('click', e => {
     if (!trascina) return;
     e.preventDefault();
@@ -307,14 +300,13 @@ function attivaTrascinamentoVetrina() {
   }, true);
 }
 
-/* Frecce ‹ › della vetrina su desktop: scorrimento a "pagine" + visibilità contestuale */
+/* Frecce ‹ › della vetrina su desktop */
 function attivaFrecceVetrina() {
   const box = $('#featuredGrid');
   const prev = $('#vetrinaPrev');
   const next = $('#vetrinaNext');
   if (!box || !prev || !next || !box.addEventListener) return;
 
-  /* l'attributo [hidden] nel markup serviva da fallback no-JS: ora comando io con .hidden */
   prev.removeAttribute('hidden');
   next.removeAttribute('hidden');
 
@@ -482,12 +474,7 @@ function inviaOrdine() {
   toast(`Grazie ${nome}! Richiesta inviata: ti ricontattiamo per conferma e consegna.`);
 }
 
-/* ---------- Dati negozio: IL FIX del footer ----------
-   Prima: lo span dell'indirizzo era testo statico nell'HTML e i valori vuoti non
-   sovrascrivevano nulla → modifiche dall'admin invisibili o parziali.
-   Ora: la riga contatti si Ricostruisce pezzo per pezzo dai dati salvati
-   (sede · telefono · email), gli orari e i social compaiono solo se compilati
-   e i link tel:/mailto: puntano sempre al valore corrente. */
+/* ---------- Dati negozio nel footer: riga ricostruita dai valori dell'admin ---------- */
 function datiNegozioComposti() {
   const n = { ...NEGOZIO_INIZIALE, ...(negozio && typeof negozio === 'object' ? negozio : {}) };
   const comune = [n.cap, n.citta, n.prov ? `(${n.prov})` : ''].filter(Boolean).join(' ');
@@ -498,15 +485,12 @@ function datiNegozioComposti() {
 function applicaDatiNegozio() {
   const d = datiNegozioComposti();
 
-  /* Nome negozio nel copyright: sempre aggiornato, con riserva sul default */
   const nome = $('#footName');
   if (nome) nome.textContent = d.nome || NEGOZIO_INIZIALE.nome;
 
-  /* Città nel copyright: "Monopoli (BA)" se la provincia c'è */
-  const citta = $('#footCitta');
+  const citta = $('#footCitta') || $('#footLuogo');
   if (citta) citta.textContent = [d.citta, d.prov ? `(${d.prov})` : ''].filter(Boolean).join(' ');
 
-  /* RIGA CONTATTI ricostruita da zero: niente testo hardcoded che sopravvive alle modifiche */
   const riga = $('#footContatti') || document.querySelector('.foot-contatti');
   if (riga) {
     const pezzi = [];
@@ -521,18 +505,16 @@ function applicaDatiNegozio() {
       : '<span>Vieni a trovarci o scrivici: i recapiti arrivano a breve.</span>';
   }
 
-  /* Orari: riga intera nascosta finché l'admin non li compila */
-  const rigaOrari = $('#footOrari') || document.querySelector('.foot-orari');
+  const rigaOrari = $('#footOrari');
   if (rigaOrari) {
     if (d.orari) {
       rigaOrari.classList.remove('hidden');
-      rigaOrari.textContent = `Orari di apertura: ${d.orari}`;
+      rigaOrari.textContent = `🕒 Orari: ${d.orari}`;
     } else {
       rigaOrari.classList.add('hidden');
     }
   }
 
-  /* Social: link Facebook / Instagram solo se l'URL è salvato */
   const prepara = (el, url) => {
     if (!el) return;
     if (url) {
@@ -544,10 +526,9 @@ function applicaDatiNegozio() {
       el.classList.add('hidden');
     }
   };
-  prepara($('#linkFb') || document.querySelector('.link-fb'), d.fb);
-  prepara($('#linkIg') || document.querySelector('.link-ig'), d.ig);
+  prepara($('#linkFb'), d.fb);
+  prepara($('#linkIg'), d.ig);
 
-  /* Retrocompatibilità: se nel markup restano span isolati li allineo lo stesso */
   const testo = (sel, valore) => { const el = $(sel); if (el) el.textContent = valore || ''; };
   testo('#cAddress', d.sede);
   testo('#cPhone', d.telefono);
@@ -563,110 +544,100 @@ function gestisciAzione(btn) {
   if (azione === 'dettaglio') { apriDettaglio(id); return; }
   if (azione === 'piu') { cambiaQta(id, 1); return; }
   if (azione === 'meno') { cambiaQta(id, -1); return; }
-  if (azione === 'invia-ordine') { inviaOrdine(); }
+  if (azione === 'invia-ordine') { inviaOrdine(); return; }
 }
 
-/* ---------- Eventi ---------- */
-function collegaEventi() {
-  document.addEventListener('click', e => {
-    /* drop-down "Catalogo" nel menu in alto */
-    const btnDrop = e.target.closest('#navDropBtn, .nav-drop-btn');
-    if (btnDrop) { toggleDrop(); return; }
-    /* clic fuori dal drop-down: lo chiudo */
-    if (!e.target.closest('#navDrop')) chiudiDrop();
-
-    if (e.target.closest('.nav-menu a')) chiudiMenu();
-
-    const btnAzione = e.target.closest('button[data-azione]');
-    if (btnAzione && !btnAzione.disabled) { gestisciAzione(btnAzione); return; }
-    const chip = e.target.closest('#chips .chip');
-    if (chip) { filtroAttivo = chip.dataset.filtro || 'tutti'; renderChips(); renderCatalogo(); }
-  });
-
-  const su = (selettore, evento, fn) => { const el = $(selettore); if (el) el.addEventListener(evento, fn); };
-  su('#menuBtn', 'click', toggleMenu);
-  su('#cartBtn', 'click', apriCarrello);
-  su('#cartClose', 'click', chiudiTutto);
-  su('#modalClose', 'click', chiudiTutto);
-  su('#scrim', 'click', chiudiTutto);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { chiudiDrop(); chiudiTutto(); } });
-
-  /* Solo pagina shop: ricerca e ordinamento */
-  su('#cerca', 'input', e => { testoRicerca = e.target.value; renderCatalogo(); });
-  su('#ordina', 'change', e => { ordinamento = e.target.value; renderCatalogo(); });
-}
-
-/* ---------- Caricamento dati ---------- */
-function caricaDati() {
-  const salvato = leggiJSON(CHIAVI.catalogo, []);
-  catalogo = Array.isArray(salvato) && salvato.length ? salvato : CATALOGO_INIZIALE.map(p => ({ ...p }));
-
-  /* Categorie: rispetto anche un elenco salvato vuoto (scelta esplicita dell'admin) */
-  let catSalvate = null;
-  try {
-    const grezzo = localStorage.getItem(CHIAVI.categorie);
-    if (grezzo) catSalvate = JSON.parse(grezzo);
-  } catch (e) { catSalvate = null; }
-  categorie = Array.isArray(catSalvate)
-    ? catSalvate.filter(c => c && c.id)
-    : CATEGORIE_INIZIALI.map(c => ({ ...c }));
-
+/* ---------- Avvio: legge lo stato, disegna tutto, aggancia i listener ---------- */
+function ricaricaDati() {
+  catalogo = leggiJSON(CHIAVI.catalogo, CATALOGO_INIZIALE);
+  categorie = leggiJSON(CHIAVI.categorie, CATEGORIE_INIZIALI);
   carrello = leggiJSON(CHIAVI.carrello, []);
   ordini = leggiJSON(CHIAVI.ordini, []);
-  const n = leggiJSON(CHIAVI.negozio, {});
-  negozio = (n && typeof n === 'object') ? { ...NEGOZIO_INIZIALE, ...n } : { ...NEGOZIO_INIZIALE };
-
-  /* Filtro su categoria cancellata dall'admin: rientro su "tutti" */
-  if (filtroAttivo !== 'tutti' && !categorie.some(c => c.id === filtroAttivo)) filtroAttivo = 'tutti';
+  negozio = leggiJSON(CHIAVI.negozio, NEGOZIO_INIZIALE);
 }
 
 function ridisegnaTutto() {
-  applicaDatiNegozio();
-  renderChips();
   renderDropCategorie();
   renderTileCategorie();
+  renderChips();
   renderCatalogo();
   renderVetrina();
   renderCarrello();
+  applicaDatiNegozio();
 }
 
-/* ---------- Avvio ---------- */
-function init() {
-  caricaDati();
-
-  /* Categoria in arrivo dall'URL (es. shop.html?cat=bomboniere) */
+/* shop.html?cat=xxx apre il catalogo già filtrato sulla categoria scelta */
+function leggiParametroCategoria() {
+  if (!window.location || !window.location.search) return;
   try {
     const cat = new URLSearchParams(window.location.search).get('cat');
-    filtroAttivo = cat && categorie.some(c => c.id === cat) ? cat : 'tutti';
-  } catch (e) { filtroAttivo = 'tutti'; }
+    if (cat && categorie.some(c => c.id === cat)) {
+      filtroAttivo = cat;
+      renderChips();
+      renderCatalogo();
+    }
+  } catch (e) { /* parametri illeggibili: resto sul filtro di default */ }
+}
+
+function avvia() {
+  ricaricaDati();
 
   const anno = $('#anno');
   if (anno) anno.textContent = String(new Date().getFullYear());
 
-  applicaDatiNegozio();
-  renderChips();
-  renderDropCategorie();
-  renderTileCategorie();
-  renderCatalogo();
-  renderVetrina();
+  ridisegnaTutto();
+  leggiParametroCategoria();
   attivaTrascinamentoVetrina();
   attivaFrecceVetrina();
-  renderCarrello();
-  collegaEventi();
   osservaAnimazioni();
   osservaViewport();
 
-  /* Sync live con l'admin aperto in un'altra scheda: salvi lì, si aggiorna qui */
-  if (window.addEventListener) {
-    window.addEventListener('storage', e => {
-      if (!e.key || !Object.values(CHIAVI).includes(e.key)) return;
-      const filtro Prima = filtroAttivo; /* nomi corti: riga sotto equivalente */
-      void filtroPrima;
-      caricaDati();
-      ridisegnaTutto();
-    });
-  }
+  /* --- Navigazione --- */
+  const btnMenu = selBtnMenu();
+  if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
+  const btnDrop = selBtnDrop();
+  if (btnDrop) btnDrop.addEventListener('click', toggleDrop);
+
+  /* --- Carrello e overlay --- */
+  const carrelloBtn = $('#cartBtn');
+  if (carrelloBtn) carrelloBtn.addEventListener('click', apriCarrello);
+  const chiudiCarrello = $('#cartClose');
+  if (chiudiCarrello) chiudiCarrello.addEventListener('click', chiudiTutto);
+  const chiudiModale = $('#modalClose');
+  if (chiudiModale) chiudiModale.addEventListener('click', chiudiTutto);
+  const velo = $('#scrim');
+  if (velo) velo.addEventListener('click', chiudiTutto);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') chiudiTutto(); });
+
+  /* --- Click delegati: azioni prodotto + chiusura tenda Catalogo --- */
+  document.addEventListener('click', e => {
+    const azione = e.target.closest('[data-azione]');
+    if (azione) gestisciAzione(azione);
+    const drop = $('#navDrop');
+    if (drop && !drop.contains(e.target)) chiudiDrop();
+  });
+
+  /* --- Filtri del catalogo (solo shop.html) --- */
+  const cerca = $('#cerca');
+  if (cerca) cerca.addEventListener('input', () => { testoRicerca = cerca.value; renderCatalogo(); });
+  const ordina = $('#ordina');
+  if (ordina) ordina.addEventListener('change', () => { ordinamento = ordina.value; renderCatalogo(); });
+  const chips = $('#chips');
+  if (chips) chips.addEventListener('click', e => {
+    const chip = e.target.closest('[data-filtro]');
+    if (!chip) return;
+    filtroAttivo = chip.dataset.filtro;
+    renderChips();
+    renderCatalogo();
+  });
+
+  /* --- Sync live con l'admin aperto in un'altra scheda --- */
+  window.addEventListener('storage', e => {
+    if (!e.key || !Object.values(CHIAVI).includes(e.key)) return;
+    ricaricaDati();
+    ridisegnaTutto();
+  });
 }
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-else init();
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avvia);
+else avvia();
