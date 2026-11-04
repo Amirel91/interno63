@@ -1,5 +1,8 @@
 /* Interno 63 — storefront condiviso: index.html (vetrina + categorie in primo piano) + shop.html (catalogo).
-   Categorie, catalogo e dati negozio arrivano dall'admin attraverso il localStorage condiviso. */
+   Categorie, catalogo e dati negozio arrivano dall'admin attraverso il localStorage condiviso.
+   Questa passata: VETRINA A SCORRIMENTO ORIZZONTALE — fino a 12 articoli in evidenza nel carosello
+   della home (il CSS guida overflow + scroll-snap) e trascinamento col mouse su desktop,
+   con soglia anti-click-accidentale. */
 
 /* ---------- Dati iniziali (ripristinabili dall'admin) ---------- */
 const CATALOGO_INIZIALE = [
@@ -241,13 +244,62 @@ function renderCatalogo() {
     : '';
 }
 
+/* Vetrina homepage: CAROSELLO ORIZZONTALE — fino a 12 articoli per riempire la corsia */
 function renderVetrina() {
   const griglia = $('#featuredGrid');
   if (!griglia) return; /* shop.html non ha la vetrina */
-  const scelti = catalogo.filter(p => p.vetrina).slice(0, 3);
+  const scelti = catalogo.filter(p => p.vetrina).slice(0, 12);
   griglia.innerHTML = scelti.map(schedaProdotto).join('');
   const sezione = $('#vetrina');
   if (sezione) sezione.classList.toggle('hidden', scelti.length === 0);
+}
+
+/* Trascinamento col MOUSE sulla vetrina (desktop): il touch usa lo scroll nativo.
+   Soglia di 6px: sotto non è un trascinamento, così i click su card e bottoni restano intatti. */
+function attivaTrascinamentoVetrina() {
+  const box = $('#featuredGrid');
+  if (!box || !box.addEventListener) return;
+
+  let partenza = null;   /* { x, scroll } del pointerdown */
+  let trascina = false;  /* true solo oltre la soglia */
+
+  box.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return; /* solo tasto sinistro */
+    if (box.scrollWidth <= box.clientWidth + 2) return;      /* niente da scorrere */
+    partenza = { x: e.clientX, scroll: box.scrollLeft };
+    trascina = false;
+  });
+
+  box.addEventListener('pointermove', e => {
+    if (!partenza) return;
+    const dx = e.clientX - partenza.x;
+    if (!trascina && Math.abs(dx) > 6) {
+      trascina = true;
+      box.classList.add('trascina');
+      box.style.userSelect = 'none';
+      box.style.cursor = 'grabbing';
+    }
+    if (trascina) box.scrollLeft = partenza.scroll - dx;
+  });
+
+  const fine = () => {
+    partenza = null;
+    box.classList.remove('trascina');
+    box.style.userSelect = '';
+    box.style.cursor = '';
+    /* il click arriva DOPO pointerup nello stesso ciclo: la soglia si azzera dopo */
+    setTimeout(() => { trascina = false; }, 0);
+  };
+  box.addEventListener('pointerup', fine);
+  box.addEventListener('pointercancel', fine);
+  box.addEventListener('pointerleave', fine);
+
+  /* dopo un trascinamento vero sopprimo il click accidentale su card/bottoni */
+  box.addEventListener('click', e => {
+    if (!trascina) return;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
 }
 
 /* ---------- Overlay: scrim, modale prodotto, drawer, blocco scroll ---------- */
@@ -500,6 +552,7 @@ function init() {
   renderTileCategorie();
   renderCatalogo();
   renderVetrina();
+  attivaTrascinamentoVetrina();
   renderCarrello();
   collegaEventi();
   osservaAnimazioni();

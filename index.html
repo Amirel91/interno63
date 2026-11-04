@@ -75,14 +75,19 @@
     </div>
   </div>
 
-  <!-- VETRINA: solo prodotti in evidenza -->
+  <!-- VETRINA: carosello ORIZZONTALE degli articoli in evidenza -->
   <section class="section" id="vetrina">
     <div class="section-head reveal">
       <span class="pill">Selezione della settimana</span>
       <h2>In vetrina questa settimana</h2>
-      <p>I pezzi che i nostri clienti scelgono più spesso: perfetti anche come regalo dell'ultimo minuto.</p>
+      <p>I pezzi che i nostri clienti scelgono più spesso: scorri la fila in orizzontale per vederli tutti senza allungare la pagina.</p>
     </div>
-    <div class="grid" id="featuredGrid"></div>
+    <div class="wrap carosello-wrap reveal">
+      <button class="carosello-freccia sx" id="vetrinaPrev" type="button" aria-label="Articoli in vetrina precedenti" aria-controls="featuredGrid" hidden>‹</button>
+      <div class="carosello" id="featuredGrid" tabindex="0" aria-label="Vetrina articoli in evidenza: scorri in orizzontale trascinando o con le frecce"></div>
+      <button class="carosello-freccia dx" id="vetrinaNext" type="button" aria-label="Articoli in vetrina successivi" aria-controls="featuredGrid" hidden>›</button>
+      <p class="carosello-nota hint" aria-hidden="true">← Scorri la fila per scoprire gli altri pezzi in vetrina →</p>
+    </div>
     <div class="cta-center reveal">
       <a class="btn btn-ghost" href="shop.html">Sfoglia tutto il catalogo →</a>
     </div>
