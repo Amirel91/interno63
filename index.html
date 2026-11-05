@@ -19,7 +19,8 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="home">
-<div class="topbar">Spedizione tracciata in tutta Italia · Personalizzazione con nomi e data inclusa</div>
+<!-- Testo editabile dall'admin: svuotarlo nel pannello nasconde la striscia -->
+<div class="topbar" id="txtTopbar">Spedizione tracciata in tutta Italia · Personalizzazione con nomi e data inclusa</div>
 
 <!-- HEADER + NAV: logo fiocco-regalo su tondo verde, SVG inline senza classi dedicate -->
 <header class="nav">
@@ -56,23 +57,23 @@
 </header>
 
 <main id="top">
-  <!-- HERO: sede a Morbegno (SO), senza la dicitura "fatto a mano a" -->
+  <!-- HERO: tutti i testi sono editabili dall'admin (scheda "Testi home") -->
   <section class="hero" aria-label="Presentazione">
     <div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
     <div class="hero-inner reveal">
-      <span class="sticker">✦ Morbegno (SO) · dal 2014</span>
-      <p class="kicker">Bomboniere · Regalo · Cerimonie</p>
-      <h1>Ogni occasione merita un ricordo <em>che resta</em>.</h1>
-      <p class="lead">Da Interno 63, nel cuore della Valtellina a Morbegno, scegli bomboniere artigianali, cofanetti curati nei dettagli e servizi completi per il tuo matrimonio: ogni pezzo è scelto e curato uno a uno, dal barattolo di miele alla candela profumata.</p>
-      <p class="hero-offer"><span class="hero-offer-tag">Promo del mese</span> −10% su cofanetti e box regalo con il codice <b>PRIMA63</b></p>
+      <span class="sticker" id="txtSticker">✦ Morbegno (SO) · dal 2014</span>
+      <p class="kicker" id="txtKicker">Bomboniere · Regalo · Cerimonie</p>
+      <h1><span id="txtTitolo">Ogni occasione merita un ricordo</span> <em id="txtTitoloEm">che resta.</em></h1>
+      <p class="lead" id="txtLead">Da Interno 63, nel cuore della Valtellina a Morbegno, scegli bomboniere artigianali, cofanetti curati nei dettagli e servizi completi per il tuo matrimonio: ogni pezzo è scelto e curato uno a uno, dal barattolo di miele alla candela profumata.</p>
+      <p class="hero-offer" id="heroOffer"><span class="hero-offer-tag">Promo del mese</span> −10% su cofanetti e box regalo con il codice <b>PRIMA63</b></p>
       <div class="cta-row">
-        <a class="btn" href="#categorie">Scegli la categoria</a>
-        <a class="btn btn-ghost" href="shop.html?cat=matrimonio">Servizi matrimonio</a>
+        <a class="btn" id="cta1" href="#categorie">Scegli la categoria</a>
+        <a class="btn btn-ghost" id="cta2" href="shop.html?cat=matrimonio">Servizi matrimonio</a>
       </div>
       <div class="hero-stats">
-        <div class="stat"><b>11</b><span>anni di attività</span></div>
-        <div class="stat"><b>600+</b><span>cerimonie seguite</span></div>
-        <div class="stat"><b>4.9★</b><span>valutazione clienti</span></div>
+        <div class="stat"><b id="stat1v">11</b><span id="stat1l">anni di attività</span></div>
+        <div class="stat"><b id="stat2v">600+</b><span id="stat2l">cerimonie seguite</span></div>
+        <div class="stat"><b id="stat3v">4.9★</b><span id="stat3l">valutazione clienti</span></div>
       </div>
     </div>
   </section>
@@ -80,9 +81,9 @@
   <!-- CATEGORIE IN PRIMO PIANO: subito sotto l'hero -->
   <section class="section cats" id="categorie">
     <div class="section-head reveal">
-      <span class="pill">Parti da qui</span>
-      <h2>Trova il regalo giusto in un tap</h2>
-      <p>Ogni categoria raccoglie i pezzi selezionati in negozio: scegli la tua occasione e il catalogo si apre già filtrato, tu pensi solo al regalo.</p>
+      <span class="pill" id="catPill">Parti da qui</span>
+      <h2 id="catTit">Trova il regalo giusto in un tap</h2>
+      <p id="catDesc">Ogni categoria raccoglie i pezzi selezionati in negozio: scegli la tua occasione e il catalogo si apre già filtrato, tu pensi solo al regalo.</p>
     </div>
     <div class="cats-grid reveal" id="catsGrid" role="group" aria-label="Categorie del catalogo"></div>
     <div class="cta-center reveal">
@@ -90,9 +91,9 @@
     </div>
   </section>
 
-  <!-- TICKER -->
-  <div class="ticker" aria-hidden="true">
-    <div class="ticker-track">
+  <!-- TICKER: testo editabile dall'admin, ripetuto due volte per l'effetto loop -->
+  <div class="ticker" id="tickerBox" aria-hidden="true">
+    <div class="ticker-track" id="tickerTrack">
       <span>Bomboniere artigianali ✦ Cofanetti regalo ✦ Servizi matrimonio ✦ Consegna in tutta Italia ✦ Personalizzazione con nomi e date ✦ Confetti artigianali italiani ✦</span>
       <span>Bomboniere artigianali ✦ Cofanetti regalo ✦ Servizi matrimonio ✦ Consegna in tutta Italia ✦ Personalizzazione con nomi e date ✦ Confetti artigianali italiani ✦</span>
     </div>
@@ -101,9 +102,9 @@
   <!-- VETRINA: carosello orizzontale -->
   <section class="section" id="vetrina">
     <div class="section-head reveal">
-      <span class="pill">Selezione della settimana</span>
-      <h2>In vetrina questa settimana</h2>
-      <p>I pezzi che i nostri clienti scelgono più spesso: scorri la fila in orizzontale per vederli tutti senza allungare la pagina.</p>
+      <span class="pill" id="vetPill">Selezione della settimana</span>
+      <h2 id="vetTit">In vetrina questa settimana</h2>
+      <p id="vetDesc">I pezzi che i nostri clienti scelgono più spesso: scorri la fila in orizzontale per vederli tutti senza allungare la pagina.</p>
     </div>
     <div class="wrap carosello-wrap reveal">
       <button class="carosello-freccia sx" id="vetrinaPrev" type="button" aria-label="Articoli in vetrina precedenti" aria-controls="featuredGrid" hidden>‹</button>
@@ -121,9 +122,9 @@
        per integrarsi nel design, senza widget esterni che appesantiscono la pagina. -->
   <section class="section" id="social">
     <div class="section-head reveal">
-      <span class="pill">Dalla pagina Facebook</span>
-      <h2>Il negozio, un post alla volta</h2>
-      <p>Pubblichiamo arrivi, allestimenti e lavori su misura: passa dalla pagina per vedere le foto complete, i prezzi dei pezzi unici e per scriverci in messaggio privato.</p>
+      <span class="pill" id="socPill">Dalla pagina Facebook</span>
+      <h2 id="socTit">Il negozio, un post alla volta</h2>
+      <p id="socDesc">Pubblichiamo arrivi, allestimenti e lavori su misura: passa dalla pagina per vedere le foto complete, i prezzi dei pezzi unici e per scriverci in messaggio privato.</p>
     </div>
     <div class="wrap">
       <div class="cats-grid reveal" role="group" aria-label="Argomenti della pagina Facebook del negozio">
@@ -195,6 +196,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="testi.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
