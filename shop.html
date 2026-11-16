@@ -16,15 +16,17 @@
 <!-- HEADER + NAV -->
 <header class="nav">
   <a class="brand" href="index.html" aria-label="Interno 63 — torna alla home">
-    <!-- Logo: fiocco regalo su tondo verde, nei colori del brand -->
-    <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-      <circle cx="24" cy="24" r="22.5" fill="#1d4a35"/>
-      <circle cx="24" cy="24" r="21.2" fill="none" stroke="#c9a24b" stroke-width="1.6"/>
-      <ellipse cx="15.5" cy="19" rx="7.2" ry="4.6" fill="#c9a24b" transform="rotate(-28 15.5 19)"/>
-      <ellipse cx="32.5" cy="19" rx="7.2" ry="4.6" fill="#c9a24b" transform="rotate(28 32.5 19)"/>
-      <ellipse cx="16.5" cy="29.5" rx="6.2" ry="4" fill="#e8d9ae" transform="rotate(28 16.5 29.5)"/>
-      <ellipse cx="31.5" cy="29.5" rx="6.2" ry="4" fill="#e8d9ae" transform="rotate(-28 31.5 29.5)"/>
-      <circle cx="24" cy="24" r="3.8" fill="#fdfaf3" stroke="#c9a24b" stroke-width="1.2"/>
+    <!-- Logo unico del sito: stesso fiocco-regalo lineare di home e admin -->
+    <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="23" fill="#1d4a35"/>
+      <circle cx="24" cy="24" r="21.6" fill="none" stroke="#c9a24b" stroke-width="1.6"/>
+      <g fill="none" stroke="#e8d9ae" stroke-width="2.4" stroke-linecap="round">
+        <path d="M24 19c-3.4-4.6-8.2-5.2-9.8-2.6-1.5 2.5 1.8 5.5 6.8 5.6"/>
+        <path d="M24 19c3.4-4.6 8.2-5.2 9.8-2.6 1.5 2.5-1.8 5.5-6.8 5.6"/>
+        <path d="M21.6 21.4 18 31.5"/>
+        <path d="M26.4 21.4 30 31.5"/>
+      </g>
+      <circle cx="24" cy="20.2" r="2.5" fill="#c9a24b"/>
     </svg>
     Interno <b>63</b>
   </a>
@@ -98,8 +100,9 @@
   <p class="foot-contatti" id="footOrari" hidden>🕒 Orari: Lun–Sab 9:30–13:00</p>
   <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Catalogo articoli<span id="footLuogo"> · Morbegno (SO)</span></p>
   <nav class="foot-links" aria-label="Link utili">
-    <a class="link" href="index.html">Torna alla home</a>
-    <a class="link" href="index.html#social">Pagina Facebook</a>
+    <a class="link" href="index.html">Home</a>
+    <a class="link hidden" id="linkFb" href="https://www.facebook.com/share/14xCco4QcLd/" rel="noopener">Facebook</a>
+    <a class="link hidden" id="linkIg" href="#" rel="noopener">Instagram</a>
     <a class="link" href="admin.html">Area amministratore</a>
   </nav>
 </footer>

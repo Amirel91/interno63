@@ -12,8 +12,8 @@
 </head>
 <body class="pag-admin">
 
-<!-- HEADER ADMIN: stesso logo fiocco-regalo e struttura del brand di home e shop -->
-<header class="admin-head">
+<!-- HEADER: stessa barra .nav di home e catalogo, con badge Admin -->
+<header class="nav">
   <a class="brand" href="index.html" aria-label="Interno 63 — torna al negozio">
     <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
       <circle cx="24" cy="24" r="23" fill="#1d4a35"/>
@@ -28,9 +28,9 @@
     </svg>
     Interno <b>63</b> <span class="admin-tag">Admin</span>
   </a>
-  <div class="admin-head-actions">
-    <a class="btn btn-ghost" href="index.html">← Torna al negozio</a>
-    <button class="btn" type="button" id="adminLogout" hidden>Esci</button>
+  <div class="nav-actions">
+    <a class="btn-mini" href="shop.html">Catalogo</a>
+    <button class="btn-mini" type="button" id="adminLogout" hidden>Esci</button>
   </div>
 </header>
 
@@ -179,13 +179,13 @@
           <input id="sVia" maxlength="60" placeholder="Via Roma 63">
         </label>
         <label>CAP
-          <input id="sCap" maxlength="6" inputmode="numeric" placeholder="70043">
+          <input id="sCap" maxlength="6" inputmode="numeric" placeholder="23017">
         </label>
         <label>Città
-          <input id="sCitta" maxlength="40" placeholder="Monopoli">
+          <input id="sCitta" maxlength="40" placeholder="Morbegno">
         </label>
         <label>Provincia <span class="hint">(sigla)</span>
-          <input id="sProv" maxlength="2" placeholder="BA" style="text-transform:uppercase">
+          <input id="sProv" maxlength="2" placeholder="SO" style="text-transform:uppercase">
         </label>
         <label class="wide">Orari di apertura <span class="hint">(opzionale)</span>
           <input id="sOrari" maxlength="90" placeholder="Lun–Sab 9:30–13:00 e 17:00–20:30">
@@ -252,7 +252,10 @@
     <span>Via Roma 63, 23017 Morbegno (SO)</span>
     <span aria-hidden="true">·</span>
     <a class="foot-tel" href="tel:+393512345678">351 234 5678</a>
+    <span aria-hidden="true">·</span>
+    <a class="foot-tel" href="mailto:info@interno63.it">info@interno63.it</a>
   </p>
+  <p class="foot-contatti" id="footOrari" hidden>🕒 Orari: Lun–Sab 9:30–13:00</p>
   <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Pannello di gestione interna<span id="footLuogo"> · Morbegno (SO)</span></p>
   <nav class="foot-links" aria-label="Link utili">
     <a class="link" href="index.html">Home</a>

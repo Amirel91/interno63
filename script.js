@@ -27,9 +27,9 @@ const NEGOZIO_INIZIALE = {
   telefono: '351 234 5678',
   email: 'info@interno63.it',
   via: 'Via Roma 63',
-  cap: '70043',
-  citta: 'Monopoli',
-  prov: 'BA',
+  cap: '23017',
+  citta: 'Morbegno',
+  prov: 'SO',
   orari: '',
   fb: '',
   ig: ''

@@ -29,9 +29,9 @@
     nome: 'Interno 63',
     telefono: '351 234 5678',
     via: 'Via Roma 63',
-    cap: '70043',
-    citta: 'Monopoli',
-    prov: 'BA',
+    cap: '23017',
+    citta: 'Morbegno',
+    prov: 'SO',
     email: 'info@interno63.it',
     orari: ''
   };
