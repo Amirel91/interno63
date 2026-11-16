@@ -37,7 +37,7 @@ body.blocco-scroll{overflow:hidden}
 img{max-width:100%;display:block}
 button{font-family:var(--font-testo);font-size:100%;font-weight:inherit;cursor:pointer}
 a{color:inherit}
-input,select,textarea{font-family:inherit;font-size:16px;color:var(--testo)} /* 16px fissi: niente zoom iOS a fuoco */
+input,select,textarea{font-family:var(--font-testo);font-size:16px;color:var(--testo)} /* 16px fissi: niente zoom iOS a fuoco */
 :focus-visible{outline:2px solid var(--oro);outline-offset:2px;border-radius:4px}
 h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.14;letter-spacing:-.012em}
 h1{font-size:clamp(1.55rem,5.2vw,2.65rem)}
@@ -75,6 +75,12 @@ h1 em,h2 em{font-style:italic;color:var(--accente)}
 .topbar{background:var(--accente-scuro);color:var(--oro-tenue);text-align:center;font-size:.7rem;font-weight:600;letter-spacing:.05em;padding:.42rem 1rem}
 .nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;min-height:var(--h-nav);padding:.55rem var(--sp-4);background:rgba(253,250,243,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--bordo)}
 .brand{font-family:var(--font-display);font-size:1.12rem;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:.5rem}
+.admin-head .brand{font-size:1.12rem}
+.admin-tag{display:inline-flex;align-items:center;background:var(--oro-tenue);color:var(--accente-scuro);border-radius:999px;padding:.14rem .6rem;font-family:var(--font-testo);font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-left:.3rem}
+.foot-links a{font-size:.8rem;font-weight:700;color:var(--accente);text-decoration:underline;text-underline-offset:3px}
+.foot-links a:hover{color:var(--accente-scuro)}
+.foot .foot-tel{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.foot .foot-tel:hover{color:var(--accente)}
 .brand b{color:var(--accente)}
 .nav-actions{display:flex;align-items:center;gap:.55rem;margin-left:auto;order:2}
 .cart-btn{position:relative;background:var(--carta);border:1px solid var(--bordo-forte);border-radius:999px;min-width:44px;min-height:44px;padding:.4rem .8rem;font-size:1rem;line-height:1;transition:border-color var(--transizione),transform var(--transizione)}
@@ -87,6 +93,10 @@ h1 em,h2 em{font-style:italic;color:var(--accente)}
 .menu-btn[aria-expanded="true"] span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
 .nav-menu{display:none;width:100%;order:3;flex-direction:column;gap:.05rem;padding:.5rem 0 .9rem}
 .nav-menu.aperta{display:flex}
+/* Admin: navigazione sempre visibile e in linea (nessun hamburger nel pannello) */
+.pag-admin .nav-menu{display:flex;flex-direction:row;flex-wrap:wrap;gap:.2rem .6rem;width:100%;order:3;padding:.35rem 0 .1rem}
+.pag-admin .nav-menu > a{width:auto;min-height:44px;padding:.55rem .7rem;font-size:.88rem}
+.pag-admin .brand .pill{margin-left:.35rem;transform:translateY(-2px)}
 .nav-menu > a,.nav-drop-btn{text-decoration:none;font-weight:700;font-size:.95rem;color:var(--testo);padding:.7rem .4rem;border-radius:10px;text-align:left;background:none;border:none;width:100%;min-height:44px}
 .nav-menu > a:hover{color:var(--accente)}
 .nav-menu a[aria-current="page"]{color:var(--accente)}
