@@ -352,6 +352,10 @@ function apriModale(sel) {
   const m = $(sel);
   if (!m) return;
   m.hidden = false;
+  /* Ponte con il CSS: la .modal-card diventa visibile solo con la classe
+     che il foglio di stile attende — prima mancava e la scheda restava vuota */
+  const card = m.querySelector('.modal-card');
+  if (card) card.classList.add('modal');
   requestAnimationFrame(() => m.classList.add('aperta'));
   chiudiMenu();
   mostraScrim();
