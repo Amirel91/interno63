@@ -36,7 +36,8 @@ const NEGOZIO_INIZIALE = {
 };
 
 /* Chiavi condivise con admin.js: le modifiche fatte in admin.html si riflettono qui */
-const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', carrello: 'i63-carrello', ordini: 'i63-ordini', admin: 'i63-admin', negozio: 'i63-negozio' };
+const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', carrello: 'i63-carrello', ordini: 'i63-ordini', messaggi: 'i63-messaggi', admin: 'i63-admin', negozio: 'i63-negozio' };
+let messaggi = [];
 
 /* ---------- Stato ---------- */
 let catalogo = [];
@@ -540,6 +541,83 @@ function applicaDatiNegozio() {
   testo('#cOrari', d.orari);
 }
 
+/* ---------- Modulo contatti (solo contatti.html): validazione + notifica all'admin ---------- */
+function mostraErrore(idErr, testo) {
+  const el = $(idErr);
+  if (el) el.textContent = testo || '';
+}
+
+function validaFormContatti() {
+  let valido = true;
+  const nome = (($('#ctNome') && $('#ctNome').value) || '').trim();
+  const tel = (($('#ctTel') && $('#ctTel').value) || '').trim();
+  const email = (($('#ctEmail') && $('#ctEmail').value) || '').trim();
+  const msg = (($('#ctMsg') && $('#ctMsg').value) || '').trim();
+
+  mostraErrore('#errNome', ''); mostraErrore('#errTel', ''); mostraErrore('#errEmail', ''); mostraErrore('#errMsg', '');
+
+  if (nome.length < 2) { mostraErrore('#errNome', 'Inserisci il tuo nome e cognome.'); valido = false; }
+  const cifreTel = tel.replace(/\D/g, '');
+  if (tel && !/^(\+39[\s.-]?)?3\d{2}[\s.-]?\d{6,7}$|^0\d{1,3}[\s.-]?\d{5,8}$/.test(tel) && cifreTel.length < 8) {
+    mostraErrore('#errTel', 'Inserisci un numero di telefono italiano valido (es. 351 234 5678).'); valido = false;
+  }
+  if (!tel) { mostraErrore('#errTel', 'Il telefono è obbligatorio: ti richiamiamo per la conferma.'); valido = false; }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { mostraErrore('#errEmail', 'Inserisci un\'email valida (es. nome@esempio.it).'); valido = false; }
+  if (msg.length < 10) { mostraErrore('#errMsg', 'Scrivi qualche riga in più: servono almeno 10 caratteri.'); valido = false; }
+  return valido ? { nome, tel, email, msg } : null;
+}
+
+function inviaMessaggio(evento) {
+  evento.preventDefault();
+  const dati = validaFormContatti();
+  const esito = $('#ctEsito');
+  if (!dati) {
+    if (esito) { esito.classList.add('hidden'); }
+    toast('Controlla i campi evidenziati e riprova.');
+    return;
+  }
+  messaggi = leggiJSON(CHIAVI.messaggi, []);
+  messaggi.unshift({
+    id: Date.now(),
+    data: new Date().toLocaleDateString('it-IT'),
+    ora: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
+    nome: dati.nome,
+    tel: dati.tel,
+    email: dati.email,
+    testo: dati.msg,
+    letto: false
+  });
+  scriviJSON(CHIAVI.messaggi, messaggi);
+  const form = $('#contactForm');
+  if (form) form.reset();
+  aggiornaContatoreMsg();
+  if (esito) {
+    esito.textContent = `Grazie ${dati.nome}! Messaggio ricevuto: lo trovi anche sul bancone dell'area amministratore, ti ricontattiamo al più presto al numero ${dati.tel}.`;
+    esito.classList.remove('hidden');
+  }
+  toast('Messaggio inviato: grazie per averci scritto!');
+}
+
+function aggiornaContatoreMsg() {
+  const cont = $('#ctCount');
+  const campo = $('#ctMsg');
+  if (cont && campo) cont.textContent = `${campo.value.length}/800`;
+}
+
+/* Compila i link del negozio nella pagina contatti coi dati dell'admin */
+function applicaLinkContatti() {
+  const d = datiNegozioComposti();
+  const tel = $('#cPhoneLink');
+  if (tel && d.telefono) {
+    tel.textContent = d.telefono;
+    tel.href = `tel:+39${String(d.telefono).replace(/\D/g, '')}`;
+  }
+  const mail = $('#cEmailLink');
+  if (mail && d.email) { mail.textContent = d.email; mail.href = `mailto:${d.email}`; }
+  const orari = $('#cOrari');
+  if (orari && d.orari) orari.textContent = d.orari;
+}
+
 /* ---------- Azioni delegate (solo storefront) ---------- */
 function gestisciAzione(btn) {
   if (!btn) return;
@@ -585,6 +663,7 @@ function leggiParametroCategoria() {
 
 function avvia() {
   ricaricaDati();
+  messaggi = leggiJSON(CHIAVI.messaggi, []);
 
   const anno = $('#anno');
   if (anno) anno.textContent = String(new Date().getFullYear());
@@ -634,6 +713,15 @@ function avvia() {
     renderChips();
     renderCatalogo();
   });
+
+  /* --- Form contatti (solo contatti.html) --- */
+  const contactForm = $('#contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', inviaMessaggio);
+    const areaMsg = $('#ctMsg');
+    if (areaMsg) areaMsg.addEventListener('input', aggiornaContatoreMsg);
+  }
+  applicaLinkContatti();
 
   /* --- Sync live con l'admin aperto in un'altra scheda --- */
   window.addEventListener('storage', e => {

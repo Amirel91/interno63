@@ -121,11 +121,45 @@
   const nomeCat = id => { const c = categorie.find(x => x.id === id); return c ? c.nome : (id || 'Senza categoria'); };
   const iconaCat = id => { const c = categorie.find(x => x.id === id); return c ? c.icona : '✿'; };
 
+  /* ---------- Menu mobile: stessi selettori e classi del nav condiviso ---------- */
+  function chiudiMenuAdmin() {
+    const menu = $('#navMenu');
+    const btn = $('#menuBtn');
+    if (menu) menu.classList.remove('aperta', 'attiva');
+    if (btn) btn.classList.remove('attiva') || btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleMenuAdmin() {
+    const menu = $('#navMenu');
+    const btn = $('#menuBtn');
+    if (!menu || !btn) return;
+    const aperto = !menu.classList.contains('aperta');
+    menu.classList.toggle('aperta', aperto);
+    menu.classList.toggle('attiva', aperto);
+    btn.classList.toggle('attiva', aperto);
+    btn.setAttribute('aria-expanded', String(aperto));
+    if (!aperto) chiudiMenuAdmin();
+  }
+
   /* ---------- Accesso ---------- */
   function apriSessione() {
     scriviJSON(CHIAVI.sessione, true);
     apriDashboard();
     toast('Accesso consentito: gestione negozio sbloccata.');
+  }
+
+  /* Hamburger del nav condiviso: attivo da subito, anche a gate chiuso */
+  const btnMenuAdmin = $('#menuBtn');
+  if (btnMenuAdmin) btnMenuAdmin.addEventListener('click', toggleMenuAdmin);
+  document.addEventListener('click', e => {
+    const menu = $('#navMenu');
+    if (menu && menu.classList.contains('aperta') && !menu.contains(e.target) && e.target !== btnMenuAdmin) chiudiMenuAdmin();
+  });
+  if (window.matchMedia) {
+    const mq = window.matchMedia('(min-width:768px)');
+    const azzera = () => { if (mq.matches) chiudiMenuAdmin(); };
+    if (mq.addEventListener) mq.addEventListener('change', azzera);
+    else if (mq.addListener) mq.addListener(azzera);
   }
 
   function chiudiSessione() {

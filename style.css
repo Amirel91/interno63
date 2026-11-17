@@ -7,8 +7,21 @@
 .tabpane{padding-top:var(--sp-4)}
 .modal{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:var(--sp-4);background:rgba(36,43,34,.55);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity var(--transizione)}
 .modal.aperta{opacity:1;pointer-events:auto}
-.modal-card.modal{position:relative;inset:auto;display:block;padding:0;background:var(--carta);opacity:1;pointer-events:auto}
+ .modal-card.modal{position:relative;inset:auto;display:block;padding:0;background:var(--carta);opacity:1;pointer-events:auto}
 
+/* ---------- Pagina Contatti ---------- */
+.contatti-grid{display:grid;gap:var(--sp-5);align-items:start}
+.err-campo{display:block;min-height:1.1em;margin-top:.25rem;font-size:.75rem;font-weight:700;color:var(--pericolo)}
+.err-campo:empty{display:none}
+.box-esito{margin-top:var(--sp-3);padding:.9rem 1.1rem;border-radius:var(--raggio-mini);border:1px solid var(--oro);background:var(--oro-tenue);color:var(--accente-scuro);font-size:.88rem;font-weight:600}
+.contatti-info{position:sticky;top:calc(var(--h-nav) + var(--sp-4))}
+.info-lista{list-style:none;display:flex;flex-direction:column;gap:var(--sp-3);margin:var(--sp-3) 0}
+.info-lista li{display:flex;flex-direction:column;gap:.15rem;border-bottom:1px dashed var(--bordo-forte);padding-bottom:var(--sp-3)}
+.info-lista li:last-child{border-bottom:none;padding-bottom:0}
+.info-lista b{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--testo-2)}
+.info-lista a{text-decoration:none;color:var(--accente);font-weight:700}
+.info-lista a:hover{text-decoration:underline;text-underline-offset:3px}
+@media (min-width:1024px){.contatti-grid{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}}
 :root{
   --bg:#f6f1e7;--carta:#fdfaf3;--testo:#242b22;--testo-2:#57534e;
   --bordo:#e6ddca;--bordo-forte:#cdbfa5;

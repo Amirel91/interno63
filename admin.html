@@ -12,7 +12,7 @@
 </head>
 <body class="pag-admin">
 
-<!-- HEADER: stessa barra .nav di home e catalogo, con badge Admin -->
+<!-- HEADER: barra .nav identica a home, catalogo e contatti, con badge Admin sul brand -->
 <header class="nav">
   <a class="brand" href="index.html" aria-label="Interno 63 — torna al negozio">
     <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
@@ -29,10 +29,14 @@
     Interno <b>63</b> <span class="admin-tag">Admin</span>
   </a>
   <div class="nav-actions">
-    <a class="btn-mini" href="shop.html">Catalogo</a>
-    <a class="btn-mini" href="#contatti">Contatti</a>
     <button class="btn-mini" type="button" id="adminLogout" hidden>Esci</button>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Apri menu di navigazione" aria-expanded="false" aria-controls="navMenu"><span></span><span></span></button>
   </div>
+  <nav class="nav-menu" id="navMenu" aria-label="Navigazione principale">
+    <a href="index.html">Home</a>
+    <a href="shop.html">Catalogo</a>
+    <a href="contatti.html">Contatti</a>
+  </nav>
 </header>
 
 <!-- ACCESSO -->
@@ -261,6 +265,7 @@
   <nav class="foot-links" aria-label="Link utili">
     <a class="link" href="index.html">Home</a>
     <a class="link" href="shop.html">Catalogo</a>
+    <a class="link" href="contatti.html">Contatti</a>
   </nav>
 </footer>
 

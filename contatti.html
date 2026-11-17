@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contatti — Interno 63</title>
+<meta name="description" content="Scrivi a Interno 63: richiesta di preventivo, personalizzazione bomboniere o informazioni su servizi matrimonio. Risposta dal negozio di Morbegno.">
+<meta name="theme-color" content="#1d4a35">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='23' fill='%231d4a35'/%3E%3Ccircle cx='24' cy='24' r='21.6' fill='none' stroke='%23c9a24b' stroke-width='1.6'/%3E%3Cg fill='none' stroke='%23e8d9ae' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M24 19c-3.4-4.6-8.2-5.2-9.8-2.6-1.5 2.5 1.8 5.5 6.8 5.6'/%3E%3Cpath d='M24 19c3.4-4.6 8.2-5.2 9.8-2.6 1.5 2.5-1.8 5.5-6.8 5.6'/%3E%3Cpath d='M21.6 21.4 18 31.5'/%3E%3Cpath d='M26.4 21.4 30 31.5'/%3E%3C/g%3E%3Ccircle cx='24' cy='20.2' r='2.5' fill='%23c9a24b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="contatti">
+<div class="topbar" id="txtTopbar">Spedizione tracciata in tutta Italia · Personalizzazione con nomi e data inclusa</div>
+
+<!-- HEADER + NAV: stessa barra delle altre pagine, Contatti come pagina corrente -->
+<header class="nav">
+  <a class="brand" href="index.html" aria-label="Interno 63 — torna alla home">
+    <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="23" fill="#1d4a35"/>
+      <circle cx="24" cy="24" r="21.6" fill="none" stroke="#c9a24b" stroke-width="1.6"/>
+      <g fill="none" stroke="#e8d9ae" stroke-width="2.4" stroke-linecap="round">
+        <path d="M24 19c-3.4-4.6-8.2-5.2-9.8-2.6-1.5 2.5 1.8 5.5 6.8 5.6"/>
+        <path d="M24 19c3.4-4.6 8.2-5.2 9.8-2.6 1.5 2.5-1.8 5.5-6.8 5.6"/>
+        <path d="M21.6 21.4 18 31.5"/>
+        <path d="M26.4 21.4 30 31.5"/>
+      </g>
+      <circle cx="24" cy="20.2" r="2.5" fill="#c9a24b"/>
+    </svg>
+    Interno <b>63</b>
+  </a>
+  <div class="nav-actions">
+    <button class="cart-btn" id="cartBtn" type="button" aria-label="Apri carrello">🛍️ <span class="badge" id="cartCount"></span></button>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Apri menu di navigazione" aria-expanded="false" aria-controls="navMenu"><span></span><span></span></button>
+  </div>
+  <nav class="nav-menu" id="navMenu" aria-label="Navigazione principale">
+    <a href="index.html">Home</a>
+    <div class="nav-drop" id="navDrop">
+      <button class="nav-drop-btn" type="button" id="navDropBtn" aria-expanded="false" aria-haspopup="true" aria-controls="navDropMenu">
+        Catalogo <span class="nav-drop-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="nav-drop-menu" id="navDropMenu">
+        <div class="nav-drop-inner" id="dropCategorie"></div>
+      </div>
+    </div>
+    <a href="contatti.html" aria-current="page">Contatti</a>
+  </nav>
+</header>
+
+<!-- INTESTAZIONE PAGINA -->
+<section class="page-head">
+  <div class="wrap">
+    <p class="breadcrumb"><a href="index.html">Home</a> <span aria-hidden="true">/</span> Contatti</p>
+    <h1>Scrivici, rispondiamo presto</h1>
+    <p class="lead">Preventivi, personalizzazioni con nomi e data, domande sui servizi matrimonio: compila il modulo e la tua richiesta arriva direttamente al bancone del negozio.</p>
+  </div>
+</section>
+
+<!-- FORM + INFO NEGOZIO -->
+<main class="section">
+  <div class="wrap contatti-grid">
+    <div class="edit-card">
+      <div class="edit-head"><h2>✉️ La tua richiesta</h2></div>
+      <form class="form-grid" id="contactForm" novalidate autocomplete="off">
+        <label>Nome e cognome *
+          <input id="ctNome" maxlength="60" placeholder="Es. Martina Rossi">
+          <span class="err-campo" id="errNome"></span>
+        </label>
+        <label>Telefono *
+          <input id="ctTel" maxlength="30" inputmode="tel" placeholder="Es. 351 234 5678">
+          <span class="err-campo" id="errTel"></span>
+        </label>
+        <label class="wide">Email
+          <input id="ctEmail" type="email" maxlength="60" placeholder="nome@esempio.it">
+          <span class="err-campo" id="errEmail"></span>
+        </label>
+        <label class="wide">Messaggio *
+          <textarea id="ctMsg" maxlength="800" rows="5" placeholder="Raccontaci l'occasione, la data e cosa ti serve: più dettagli scrivi, più precisa sarà la nostra risposta."></textarea>
+          <span class="hint" id="ctCount">0/800</span>
+          <span class="err-campo" id="errMsg"></span>
+        </label>
+        <div class="cta-row left wide">
+          <button class="btn" type="submit">Invia richiesta</button>
+        </div>
+      </form>
+      <p class="hint box-esito hidden" id="ctEsito" role="status" aria-live="polite"></p>
+    </div>
+
+    <aside class="edit-card contatti-info">
+      <div class="edit-head"><h2>🏪 Il negozio</h2></div>
+      <ul class="info-lista">
+        <li><b>Indirizzo</b><span id="cAddress">Via Roma 63, 23017 Morbegno (SO)</span></li>
+        <li><b>Telefono</b><a class="foot-tel" id="cPhoneLink" href="tel:+393512345678">351 234 5678</a></li>
+        <li><b>Email</b><a class="foot-tel" id="cEmailLink" href="mailto:info@interno63.it">info@interno63.it</a></li>
+        <li><b>Orari</b><span id="cOrari">Lun–Sab 9:30–13:00 e 17:00–20:30</span></li>
+      </ul>
+      <p class="hint">Preferisci parlare a voce? Chiamaci in negozio negli orari di apertura: ti seguiamo anche su misura per allestimenti e cerimonie.</p>
+    </aside>
+  </div>
+</main>
+
+<!-- FOOTER: riga contatti ricomposta da script.js con i dati dell'admin -->
+<footer class="foot" id="contatti-foot">
+  <p class="foot-contatti" id="footContatti">
+    <span>Via Roma 63, 23017 Morbegno (SO)</span> ·
+    <a class="foot-tel" href="tel:+393512345678">351 234 5678</a> ·
+    <a class="foot-tel" href="mailto:info@interno63.it">info@interno63.it</a>
+  </p>
+  <p class="foot-contatti" id="footOrari" hidden>🕒 Orari: Lun–Sab 9:30–13:00</p>
+  <p>© <span id="anno">2025</span> <b id="footName">Interno 63</b> · Contatti<span id="footLuogo"> · Morbegno (SO)</span></p>
+  <nav class="foot-links" aria-label="Link utili">
+    <a class="link" href="index.html">Home</a>
+    <a class="link" href="shop.html">Catalogo</a>
+    <a class="link hidden" id="linkFb" href="https://www.facebook.com/share/14xCco4QcLd/" rel="noopener">Facebook</a>
+    <a class="link hidden" id="linkIg" href="#" rel="noopener">Instagram</a>
+    <a class="link" href="admin.html">Area amministratore</a>
+  </nav>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>
