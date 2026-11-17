@@ -12,14 +12,18 @@ const CATALOGO_INIZIALE = [
   { id: 5, nome: 'Box Nascita "Benvenuto"', prezzo: 29.0, categoria: 'cofanetti', vetrina: false, descrizione: 'Body in cotone, ciuccio e saponetta artigianale in scatola regalo con nastro.', img: '' },
   { id: 6, nome: 'Allestimento Matrimonio "Essenziale"', prezzo: 180.0, categoria: 'matrimonio', vetrina: true, descrizione: 'Segnaposto, allestimento tavolo regalo e bomboniere per fino a 50 ospiti, sopralluogo incluso.', img: '' },
   { id: 7, nome: 'Candela Profumata "Fico d\'India"', prezzo: 19.9, categoria: 'regalo', vetrina: false, descrizione: 'Cera vegetale versata a mano in vetro ambrato, durata circa 40 ore.', img: '' },
-  { id: 8, nome: 'Portagioie in Vimini', prezzo: 24.0, categoria: 'regalo', vetrina: false, descrizione: 'Cestino intrecciato a mano con interno in tessuto, perfetto per la camera.', img: '' }
+  { id: 8, nome: 'Portagioie in Vimini', prezzo: 24.0, categoria: 'regalo', vetrina: false, descrizione: 'Cestino intrecciato a mano con interno in tessuto, perfetto per la camera.', img: '' },
+  { id: 9, nome: 'Allestimento Battesimo «Rugiada»', prezzo: 140.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Allestimento tavolo dolci, confetti rosa o azzurri e bombonierine per fino a 40 ospiti.', img: '' },
+  { id: 10, nome: 'Allestimento Comunione «Luce»', prezzo: 150.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Segnaposto, candele e composizioni bianco e oro per il pranzo di festa.', img: '' },
+  { id: 11, nome: 'Allestimento Laurea «Alloro»', prezzo: 90.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Cuscino per la laurea, pergamene personalizzate e tavolo buffet a tema.', img: '' },
+  { id: 12, nome: 'Allestimento Anniversario «Oro e Argento»', prezzo: 120.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Composizioni floreali, segnaposto e ricordo per nozze d’oro o d’argento.', img: '' }
 ];
 
 const CATEGORIE_INIZIALI = [
   { id: 'bomboniere', nome: 'Bomboniere', icona: '🎀' },
   { id: 'cofanetti', nome: 'Cofanetti', icona: '📦' },
   { id: 'regalo', nome: 'Articoli regalo', icona: '🎁' },
-  { id: 'matrimonio', nome: 'Servizi matrimonio', icona: '💍' }
+  { id: 'matrimonio', nome: 'Servizi eventi', icona: '🎉' }
 ];
 
 const NEGOZIO_INIZIALE = {
@@ -630,7 +634,40 @@ function gestisciAzione(btn) {
 }
 
 /* ---------- Avvio: legge lo stato, disegna tutto, aggancia i listener ---------- */
+/* Migrazione «Servizi eventi» (una volta sola, flag condiviso con admin.js):
+   nei dati già salvati nel browser rinomina la categoria e aggiunge i quattro
+   allestimenti nuovi, senza toccare le modifiche fatte dall'utente. */
+const CHIAVE_MIGRAZIONE_EVENTI = 'i63-mig-eventi-v1';
+
+function migraServiziEventi() {
+  try {
+    if (localStorage.getItem(CHIAVE_MIGRAZIONE_EVENTI)) return;
+    const catSalvate = localStorage.getItem(CHIAVI.categorie);
+    if (catSalvate) {
+      const cats = JSON.parse(catSalvate);
+      if (Array.isArray(cats)) {
+        const matrimonio = cats.find(c => c && c.id === 'matrimonio');
+        if (matrimonio && matrimonio.nome === 'Servizi matrimonio') {
+          matrimonio.nome = 'Servizi eventi';
+          matrimonio.icona = '🎉';
+        }
+        localStorage.setItem(CHIAVI.categorie, JSON.stringify(cats));
+      }
+    }
+    const catalogoSalvato = localStorage.getItem(CHIAVI.catalogo);
+    if (catalogoSalvato) {
+      const voci = JSON.parse(catalogoSalvato);
+      if (Array.isArray(voci)) {
+        CATALOGO_INIZIALE.filter(p => p.id >= 9 && !voci.some(x => x.id === p.id)).forEach(p => voci.push(p));
+        localStorage.setItem(CHIAVI.catalogo, JSON.stringify(voci));
+      }
+    }
+    localStorage.setItem(CHIAVE_MIGRAZIONE_EVENTI, '1');
+  } catch (e) { /* storage non disponibile: i default corretti fanno già il loro lavoro */ }
+}
+
 function ricaricaDati() {
+  migraServiziEventi();
   catalogo = leggiJSON(CHIAVI.catalogo, CATALOGO_INIZIALE);
   categorie = leggiJSON(CHIAVI.categorie, CATEGORIE_INIZIALI);
   carrello = leggiJSON(CHIAVI.carrello, []);

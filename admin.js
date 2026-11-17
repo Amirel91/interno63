@@ -13,17 +13,21 @@
     { id: 5, nome: 'Box Nascita "Benvenuto"', prezzo: 29.0, categoria: 'cofanetti', vetrina: false, descrizione: 'Body in cotone, ciuccio e saponetta artigianale in scatola regalo con nastro.', img: '' },
     { id: 6, nome: 'Allestimento Matrimonio "Essenziale"', prezzo: 180.0, categoria: 'matrimonio', vetrina: true, descrizione: 'Segnaposto, allestimento tavolo regalo e bomboniere per fino a 50 ospiti, sopralluogo incluso.', img: '' },
     { id: 7, nome: 'Candela Profumata "Fico d\'India"', prezzo: 19.9, categoria: 'regalo', vetrina: false, descrizione: 'Cera vegetale versata a mano in vetro ambrato, durata circa 40 ore.', img: '' },
-    { id: 8, nome: 'Portagioie in Vimini', prezzo: 24.0, categoria: 'regalo', vetrina: false, descrizione: 'Cestino intrecciato a mano con interno in tessuto, perfetto per la camera.', img: '' }
+    { id: 8, nome: 'Portagioie in Vimini', prezzo: 24.0, categoria: 'regalo', vetrina: false, descrizione: 'Cestino intrecciato a mano con interno in tessuto, perfetto per la camera.', img: '' },
+    { id: 9, nome: 'Allestimento Battesimo «Rugiada»', prezzo: 140.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Allestimento tavolo dolci, confetti rosa o azzurri e bombonierine per fino a 40 ospiti.', img: '' },
+    { id: 10, nome: 'Allestimento Comunione «Luce»', prezzo: 150.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Segnaposto, candele e composizioni bianco e oro per il pranzo di festa.', img: '' },
+    { id: 11, nome: 'Allestimento Laurea «Alloro»', prezzo: 90.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Cuscino per la laurea, pergamene personalizzate e tavolo buffet a tema.', img: '' },
+    { id: 12, nome: 'Allestimento Anniversario «Oro e Argento»', prezzo: 120.0, categoria: 'matrimonio', vetrina: false, descrizione: 'Composizioni floreali, segnaposto e ricordo per nozze d’oro o d’argento.', img: '' }
   ];
 
   const CATEGORIE_INIZIALI = [
     { id: 'bomboniere', nome: 'Bomboniere', icona: '🎀' },
     { id: 'cofanetti', nome: 'Cofanetti', icona: '📦' },
     { id: 'regalo', nome: 'Articoli regalo', icona: '🎁' },
-    { id: 'matrimonio', nome: 'Servizi matrimonio', icona: '💍' }
+    { id: 'matrimonio', nome: 'Servizi eventi', icona: '🎉' }
   ];
 
-  const EMOJI_CATEGORIE = ['🎀','📦','🎁','💍','🕯️','🍯','🫙','🌿','🌸','🌼','🕊️','🥂','🍰','🍼','🧺','🧸','✨','🫖'];
+  const EMOJI_CATEGORIE = ['🎀','📦','🎁','💍','🎉','🕯️','🍯','🫙','🌿','🌸','🌼','🕊️','🥂','🍰','🍼','🧺','🧸','✨','🫖'];
 
   const NEGOZIO_INIZIALE = {
     nome: 'Interno 63',
@@ -49,6 +53,39 @@
 
   const CHIAVI = { catalogo: 'i63-catalogo', categorie: 'i63-categorie', ordini: 'i63-ordini', negozio: 'i63-negozio', sessione: 'i63-admin', pass: 'i63-pass' };
   const PASSWORD_DEMO = 'interno63';
+
+  /* Migrazione «Servizi eventi» (una volta sola, flag condiviso con lo storefront):
+     chi ha già dati salvati si ritrova la categoria rinominata e i quattro allestimenti
+     nuovi, senza perdere articoli modificati o aggiunti in proprio. */
+  const CHIAVE_MIGRAZIONE_EVENTI = 'i63-mig-eventi-v1';
+
+  function migraServiziEventi() {
+    try {
+      if (localStorage.getItem(CHIAVE_MIGRAZIONE_EVENTI)) return;
+      const catSalvate = localStorage.getItem(CHIAVI.categorie);
+      if (catSalvate) {
+        const cats = JSON.parse(catSalvate);
+        if (Array.isArray(cats)) {
+          const matrimonio = cats.find(c => c && c.id === 'matrimonio');
+          if (matrimonio && matrimonio.nome === 'Servizi matrimonio') {
+            matrimonio.nome = 'Servizi eventi';
+            matrimonio.icona = '🎉';
+          }
+          localStorage.setItem(CHIAVI.categorie, JSON.stringify(cats));
+        }
+      }
+      const catalogoSalvato = localStorage.getItem(CHIAVI.catalogo);
+      if (catalogoSalvato) {
+        const voci = JSON.parse(catalogoSalvato);
+        if (Array.isArray(voci)) {
+          CATALOGO_INIZIALE.filter(p => p.id >= 9 && !voci.some(x => x.id === p.id)).forEach(p => voci.push(p));
+          localStorage.setItem(CHIAVI.catalogo, JSON.stringify(voci));
+        }
+      }
+      localStorage.setItem(CHIAVE_MIGRAZIONE_EVENTI, '1');
+    } catch (e) { /* storage non disponibile: i default aggiornati coprono già tutto */ }
+  }
+  migraServiziEventi();
 
   /* ---------- Stato ---------- */
   let catalogo = [];
